@@ -1,0 +1,4 @@
+*.swp
+.vscode/
+.pyre/
+__pycache__/

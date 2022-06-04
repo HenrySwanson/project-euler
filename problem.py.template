@@ -1,0 +1,6 @@
+"""
+TODO: paste problem statement
+"""
+
+def solve_problem() -> int:
+    ...
