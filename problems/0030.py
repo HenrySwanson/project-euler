@@ -26,34 +26,31 @@ def solve_problem() -> int:
 
     # We can also do that to understand how many digits we have to look at.
     # the smallest 7-digit number is less than 7 * 9^5 = 413343, so there are no 7-digit solutions
+
+    # We also don't actually have to track the whole list, this can be done with integers only
+    # if we really want to tighten up performance
     total = 0
-    def helper(seq: List[int]) -> None:
-        if len(seq) == LIMIT:
-            if lhs(seq) == rhs(seq):
+
+    def helper(remaining_digits: int, lhs_so_far: int, rhs_so_far: int) -> None:
+        if remaining_digits == 0:
+            if lhs_so_far == rhs_so_far:
                 nonlocal total
-                total += lhs(seq)
+                total += lhs_so_far
             return
 
-        seq.append(0)
-        remaining = LIMIT - len(seq)
+        # Check whether we can prune the branch
+        r = remaining_digits
+        lhs_lower = lhs_so_far * 10**r       # pad with r zeros
+        lhs_upper = lhs_lower + (10**r - 1)  # most we can add is all nines
+        rhs_lower = rhs_so_far               # can only go up from here
+        rhs_upper = rhs_lower + r * 9**N     # most we can add is all nines
+
+        if (lhs_lower > rhs_upper) or (rhs_lower > lhs_upper):
+            return
+
+        # Okay, now try extending by one more digit
         for d in range(10):
-            seq[-1] = d
-            lhs_lower = lhs(seq)
-            lhs_upper = lhs_lower + (10**remaining - 1)  # most we can add is all nines
-            rhs_lower = rhs(seq)
-            rhs_upper = rhs_lower + remaining * 9**N  # most we can add is all nines
-            if (lhs_lower > rhs_upper) or (rhs_lower > lhs_upper):
-                continue
-            helper(seq)
-        seq.pop()
+            helper(r-1, lhs_so_far * 10 + d, rhs_so_far + d**N)
 
-    helper([])
+    helper(LIMIT, 0, 0)
     return total - 1  # remember, don't count 1
-
-def lhs(seq: List[int]) -> int:
-    return sum(
-        a * 10**(LIMIT - k - 1) for (k, a) in enumerate(seq)
-    )
-
-def rhs(seq: List[int]) -> int:
-    return sum(a**N for a in seq)
