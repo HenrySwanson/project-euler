@@ -32,12 +32,12 @@ def filename(n: int) -> str:
 
 
 def scramble(input: str) -> bytes:
-    nonsense = itertools.count()
+    nonsense = itertools.cycle(range(256))
     return bytes(x ^ y for (x, y) in zip(input.encode(), nonsense))
 
 
 def unscramble(input: bytes) -> str:
-    nonsense = itertools.count()
+    nonsense = itertools.cycle(range(256))
     return bytes(x ^ y for (x, y) in zip(input, nonsense)).decode()
 
 
@@ -57,9 +57,10 @@ def parse_answer_file() -> Dict[int, int]:
 
 def save_answer_file(answers: Dict[int, int]) -> None:
     serialized = "\n".join(f"{n}:{answer}" for (n, answer) in sorted(answers.items()))
+    contents = scramble(serialized)
 
     with open(ANSWER_FILE, "wb") as f:
-        f.write(scramble(serialized))
+        f.write(contents)
 
 
 def run_problem(n: int) -> int:

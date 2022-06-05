@@ -65,3 +65,12 @@ def factor(n: int) -> Iterator[Factor]:
 def num_divisors(n: int) -> int:
     # Number of divisors is prod(k+1) where n = prod p^k
     return math.prod(f.multiplicity + 1 for f in factor(n))
+
+
+def sum_divisors(n: int) -> int:
+    # Sum of divisors is prod(1 + p + ... + p^k) where n = prod(p^k)
+    # Equivalently, (p^(k+1) - 1)/(p-1)
+    result = 1
+    return math.prod(
+        (f.prime ** (f.multiplicity + 1) - 1) // (f.prime - 1) for f in factor(n)
+    )
