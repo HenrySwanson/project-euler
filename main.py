@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 
-import argparse
+import itertools
 import os
 import shutil
-import itertools
 from importlib import import_module
-from typing import Dict, Iterator
+from typing import Dict
+
+import click
 
 TEMPLATE_FILE = "problem.py.template"
 ANSWER_FILE = "answers.bin"
 
 # ==== TODO LIST ====
-# - check and show ignore the number argument. make that less bad
 # - maybe make scramble and unscramble depend on an un-checked-in file
 #   that i can conjure from memory?
 #   - nah, too much effort
@@ -19,6 +19,7 @@ ANSWER_FILE = "answers.bin"
 # - tests
 # - if i forget to save, how can i run a command to check that?
 # - `next` command?
+
 
 def filename(n: int) -> str:
     return f"{n:04}"
@@ -28,6 +29,7 @@ def filename(n: int) -> str:
 # plaintext answers directly to GitHub.
 # Is it unbreakable encryption? No. But if someone wants the answers from my repo
 # they could just run the problem solvers anyways, so whatever.
+
 
 def scramble(input: str) -> bytes:
     nonsense = itertools.count()
@@ -65,67 +67,112 @@ def run_problem(n: int) -> int:
     return module.solve_problem()
 
 
-def get_argparser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Solve a Project Euler problem")
-    parser.add_argument("number", type=int, help="which problem to solve")
-    parser.add_argument(
-        "action",
-        type=str,
-        choices=["run", "create", "save", "check", "show"],
-        nargs="?",
-        default="run",
-    )
-    return parser
+# ==== CLI Commands ====
 
 
-def main() -> None:
-    args = get_argparser().parse_args()
+@click.group()
+def cli() -> None:
+    pass
 
-    n = args.number
-    action = args.action
 
-    if action == "run":
-        # Solve the problem and print the answer
-        answer = run_problem(n)
-        print(answer)
-    elif action == "create":
-        # Copy the template file into the expected location, unless it already
-        # exists.
-        dst_path = f"problems/{filename(n)}.py"
-        if os.path.exists(dst_path):
-            raise Exception(f"Refusing to overwrite existing file {dst_path}")
+@cli.command()
+@click.argument(
+    "number",
+    type=int,
+)
+def create(number: int) -> None:
+    """Copy the template file into the expected location, unless it already exists"""
+    dst_path = f"problems/{filename(number)}.py"
+    if os.path.exists(dst_path):
+        raise Exception(f"Refusing to overwrite existing file {dst_path}")
 
-        shutil.copy(TEMPLATE_FILE, dst_path)
-    elif action == "save":
-        # Solve the problem and save the answer to the answers file, unless it's
-        # already there.
-        answers = parse_answer_file()
-        if n in answers:
-            raise Exception(f"Answer is already in list")
+    shutil.copy(TEMPLATE_FILE, dst_path)
 
-        answers[n] = run_problem(n)
-        save_answer_file(answers)
-    elif action == "check":
-        # Solve all problems and check if the answers match those in the cache.
-        # This is nice for checking the validity of any refactoring I'm doing.
-        saved_answers = parse_answer_file()
-        for (n, saved) in saved_answers.items():
-            current = run_problem(n)
-            if current == saved:
-                print(f"Problem {n:04} is good!")
-            else:
-                raise Exception(
-                    f"Problem {n:04} failed: solver has {current}, cache has {saved}"
-                )
-    elif action == "show":
-        # Show the entire answer list. This is nice for checking that I wrote
-        # scramble and unscramble correctly.
-        answers = parse_answer_file()
-        for (n, answer) in answers.items():
-            print(f"Problem #{n:04}: {answer}")
+
+@cli.command()
+@click.argument(
+    "number",
+    type=int,
+)
+def run(number: int) -> None:
+    """
+    Run the solver and print the answer
+    """
+    answer = run_problem(number)
+    print(answer)
+
+
+@cli.command()
+@click.argument(
+    "number",
+    type=int,
+)
+@click.option(
+    "-f", "--force", is_flag=True, default=False, help="Overwrite existing answer"
+)
+def save(number: int, force: bool) -> None:
+    """
+    Solve the problem and save the answer to the answers file
+    """
+    answers = parse_answer_file()
+    if number in answers and not force:
+        raise Exception(f"Answer is already in list")
+
+    new_answer = run_problem(number)
+    old_answer = answers.get(number)
+    if old_answer is not None and old_answer != new_answer:
+        assert force, "shouldn't have been able to get here w/o --force"
+        print(
+            f"WARNING: overwriting value for problem {number}: "
+            f"{old_answer} -> {new_answer}"
+        )
+
+    # Actually write the answer and save it
+    answers[number] = run_problem(number)
+    save_answer_file(answers)
+
+
+@cli.command()
+def show() -> None:
+    """
+    Show the entire answer list.
+    This is nice for checking that I wrote scramble and unscramble correctly.
+    """
+
+    answers = parse_answer_file()
+    for (n, answer) in answers.items():
+        print(f"Problem #{n:04}: {answer}")
+
+
+@cli.command()
+@click.argument(
+    "number",
+    type=int,
+    default=0,  # TODO: gross :(
+)
+def check(number: int) -> None:
+    """
+    Solve all problems and check if the answers match those in the cache.
+    This is nice for checking the validity of any refactoring I'm doing.
+    """
+    saved_answers = parse_answer_file()
+
+    def check_single(n):
+        saved = saved_answers[n]
+        current = run_problem(n)
+        if current == saved:
+            print(f"Problem {n:04} is good!")
+        else:
+            raise Exception(
+                f"Problem {n:04} failed: solver has {current}, cache has {saved}"
+            )
+
+    if number == 0:
+        for n in saved_answers.keys():
+            check_single(n)
     else:
-        raise Exception(f"Unexpected action '{action}'")
+        check_single(number)
 
 
 if __name__ == "__main__":
-    main()
+    cli()
