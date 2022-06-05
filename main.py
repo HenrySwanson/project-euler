@@ -19,6 +19,12 @@ ANSWER_FILE = "answers.bin"
 # - tests
 # - if i forget to save, how can i run a command to check that?
 # - `next` command?
+# - an interactive mode would be cool!
+#  - open 25, create, run, run, ..., run, save
+#  - would have to force a reload of all py files though...
+# - i wonder if i can yank the problem descriptions right from the site?
+# - run and check are pretty similar, it'd be nice to have them unified
+#   - both run the solver, and the only difference is whether there's an answer already saved
 
 
 def filename(n: int) -> str:
@@ -156,9 +162,9 @@ def check(number: int) -> None:
     Solve all problems and check if the answers match those in the cache.
     This is nice for checking the validity of any refactoring I'm doing.
     """
-    saved_answers = parse_answer_file()
+    saved_answers: Dict[int, int] = parse_answer_file()
 
-    def check_single(n):
+    def check_single(n: int) -> None:
         saved = saved_answers[n]
         current = run_problem(n)
         if current == saved:

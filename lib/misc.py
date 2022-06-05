@@ -28,6 +28,9 @@ def triangle(n: int) -> int:
     # Convention: 0 -> 0, 1 -> 1, 2 -> 3
     return n * (n + 1) // 2
 
+def sum_of_n_squares(n: int) -> int:
+    return n * (n+1) * (2*n+1) // 6
+
 
 def lcm(a: int, b: int) -> int:
     # pyre-fixme[16]: Why does pyre think this doesn't exist? Wrong stdlib version?

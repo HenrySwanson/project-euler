@@ -3,6 +3,7 @@ import math
 from typing import Iterator, List
 
 # Some global state for caching primes
+# TODO make some actual state out of this, with methods and all
 _PRIMES: List[int] = [2]
 _NEXT_INTEGER_TO_CHECK: int = 3
 
@@ -42,6 +43,16 @@ def iter_primes() -> Iterator[int]:
         # In any case, bump n
         _NEXT_INTEGER_TO_CHECK += 2
 
+def is_prime(n: int) -> bool:
+    # TODO: can we exploit the sortedness of the prime list?
+    # also, is it cheaper to try factoring instead, because of the sqrt bound?
+    for p in iter_primes():
+        if p == n:
+            return True
+        if p > n:
+            return False
+
+    raise AssertionError()
 
 def factor(n: int) -> Iterator[Factor]:
     assert n != 0, "0 can be factored forever"
