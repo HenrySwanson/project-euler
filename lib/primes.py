@@ -43,6 +43,7 @@ def iter_primes() -> Iterator[int]:
         # In any case, bump n
         _NEXT_INTEGER_TO_CHECK += 2
 
+
 def is_prime(n: int) -> bool:
     # TODO: can we exploit the sortedness of the prime list?
     # also, is it cheaper to try factoring instead, because of the sqrt bound?
@@ -53,6 +54,7 @@ def is_prime(n: int) -> bool:
             return False
 
     raise AssertionError()
+
 
 def factor(n: int) -> Iterator[Factor]:
     assert n != 0, "0 can be factored forever"

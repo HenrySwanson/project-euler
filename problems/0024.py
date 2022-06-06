@@ -10,6 +10,7 @@ import itertools
 
 from lib.misc import nth
 
+
 def solve_problem() -> int:
     digits = list(range(10))
     lexicographic = itertools.permutations(digits)

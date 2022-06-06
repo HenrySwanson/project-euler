@@ -17,6 +17,7 @@ from lib.misc import sum_of_n_squares, triangle
 
 N = 1001
 
+
 def solve_problem() -> int:
     # This is a math-only problem
 
@@ -28,12 +29,12 @@ def solve_problem() -> int:
     #   X + (X - 2k) + (X - 4k) + (X - 6k) = 4X - 12k
     # where X = (2k+1)^2, which is:
     #   4X + 12k = 16k^2 + 4k + 4
-    
+
     # Finally, we want to sum over the first K rings:
     #   sum (k <= K) 16k^2 + 4k + 4
     # = 16 [K(K+1)(2K+1)] / 6 + 4 [K(K+1)] / 2 + 4K
 
     # Then add 1 for the center
-    
-    K = (N-1) // 2
+
+    K = (N - 1) // 2
     return 16 * sum_of_n_squares(K) + 4 * triangle(K) + 4 * K + 1

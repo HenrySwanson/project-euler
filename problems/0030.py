@@ -19,6 +19,7 @@ N = 5
 # we only need to investigate 6-digit numbers (see below)
 LIMIT = 6
 
+
 def solve_problem() -> int:
     # We can check all possible tuples, but we can cut off some branches early
     # If we fix the first few digits, we can put bounds on both sides of the equation,
@@ -40,17 +41,17 @@ def solve_problem() -> int:
 
         # Check whether we can prune the branch
         r = remaining_digits
-        lhs_lower = lhs_so_far * 10**r       # pad with r zeros
+        lhs_lower = lhs_so_far * 10**r  # pad with r zeros
         lhs_upper = lhs_lower + (10**r - 1)  # most we can add is all nines
-        rhs_lower = rhs_so_far               # can only go up from here
-        rhs_upper = rhs_lower + r * 9**N     # most we can add is all nines
+        rhs_lower = rhs_so_far  # can only go up from here
+        rhs_upper = rhs_lower + r * 9**N  # most we can add is all nines
 
         if (lhs_lower > rhs_upper) or (rhs_lower > lhs_upper):
             return
 
         # Okay, now try extending by one more digit
         for d in range(10):
-            helper(r-1, lhs_so_far * 10 + d, rhs_so_far + d**N)
+            helper(r - 1, lhs_so_far * 10 + d, rhs_so_far + d**N)
 
     helper(LIMIT, 0, 0)
     return total - 1  # remember, don't count 1

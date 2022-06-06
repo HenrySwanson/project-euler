@@ -13,13 +13,12 @@ from lib.primes import sum_divisors
 
 LIMIT = 28123
 
+
 def solve_problem() -> int:
     # Pre-compute abundant numbers
     abundant = set(n for n in range(1, LIMIT) if sum_divisors(n) > 2 * n)
 
     # Check each number
     return sum(
-        n 
-        for n in range(1, LIMIT)
-        if not any(n - k in abundant for k in abundant)
+        n for n in range(1, LIMIT) if not any(n - k in abundant for k in abundant)
     )

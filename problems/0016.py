@@ -6,6 +6,7 @@ What is the sum of the digits of the number 2^1000?
 
 from lib.misc import digits
 
+
 def solve_problem() -> int:
     # Python trivializes this one
     return sum(digits(2**1000))

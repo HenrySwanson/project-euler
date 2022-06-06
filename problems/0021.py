@@ -13,6 +13,7 @@ from lib.primes import sum_divisors
 def solve_problem() -> int:
     return sum(x for x in range(1, 10001) if is_amicable(x))
 
+
 def is_amicable(x: int) -> bool:
     y = sum_divisors(x) - x
     if x == y or y == 0:

@@ -20,6 +20,7 @@ from lib.primes import is_prime, iter_primes
 
 N = 1000
 
+
 def solve_problem() -> int:
     best = (0, 0)
     best_score = 0
@@ -47,9 +48,10 @@ def solve_problem() -> int:
 
     return best[0] * best[1]
 
+
 def test_quadratic(a: int, b: int) -> int:
     for n in itertools.count():
-        if not is_prime(n*n + a * n + b):
+        if not is_prime(n * n + a * n + b):
             return n
 
     raise AssertionError()
