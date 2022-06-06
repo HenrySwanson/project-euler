@@ -42,6 +42,11 @@ def digits(n: int) -> Iterator[int]:
     return iter(int(x) for x in str(n))
 
 
+def from_digits(it: Iterable[int]) -> int:
+    # TODO: is this really faster than arithmetic?
+    return int("".join(str(d) for d in it))
+
+
 # TODO: there's gotta be something in python that does this
 def _ext_slice(s: Sequence[T], start: Optional[int], end: Optional[int]) -> Sequence[T]:
     if start is not None:

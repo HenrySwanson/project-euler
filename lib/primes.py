@@ -1,6 +1,7 @@
+from bisect import bisect_left
 import dataclasses
 import math
-from typing import Iterator, List
+from typing import Iterator, List, Optional
 
 # Some global state for caching primes
 # TODO make some actual state out of this, with methods and all
@@ -14,7 +15,16 @@ class Factor:
     multiplicity: int
 
 
-def iter_primes() -> Iterator[int]:
+def iter_primes(cutoff: Optional[int] = None) -> Iterator[int]:
+    for p in _PRIMES:
+        if cutoff is not None and p >= cutoff:
+            return
+        yield p
+
+    yield from _iter_primes_from_end(cutoff)
+
+
+def _iter_primes_from_end(cutoff: Optional[int]) -> Iterator[int]:
     # TODO: is there any chicanery that can occur if we have two of these iterators
     # going at once? probably...
 
@@ -30,11 +40,11 @@ def iter_primes() -> Iterator[int]:
                 break
         return True
 
-    for p in _PRIMES:
-        yield p
-
     while True:
         n = _NEXT_INTEGER_TO_CHECK
+        if cutoff is not None and n >= cutoff:
+            return
+
         # Check if n is prime, and if so, yield it
         if test(n):
             yield n
@@ -45,9 +55,12 @@ def iter_primes() -> Iterator[int]:
 
 
 def is_prime(n: int) -> bool:
-    # TODO: can we exploit the sortedness of the prime list?
-    # also, is it cheaper to try factoring instead, because of the sqrt bound?
-    for p in iter_primes():
+    if n < _NEXT_INTEGER_TO_CHECK:
+        idx = bisect_left(_PRIMES, n)
+        return idx < len(_PRIMES) and _PRIMES[idx] == n
+
+    # TODO: is it cheaper to try factoring instead, because of the sqrt bound?
+    for p in _iter_primes_from_end(cutoff=None):
         if p == n:
             return True
         if p > n:

@@ -85,45 +85,58 @@ class Formatter:
     indent: int = 0
     buffer: str = ""
 
-    def handle_tag(self, name: str) -> None:
-        if name == "p":
+    def handle_tag(self, tag: Tag) -> None:
+        if tag.name == "p":
             self.start_block()
-        elif name == "blockquote":
+        elif tag.name == "blockquote":
             self.indent += 4
             self.start_block()
-        elif name == "div":
+        elif tag.name == "div":
             self.start_block()
+        elif tag.name == "var":
+            pass
+        elif tag.name == "sup":
+            # TODO fractions are sometimes written as ^a/_b
+            self.buffer += "^"
+        elif tag.name == "sub":
+            self.buffer += "_"
         else:
-            self.buffer += f"<{name}>"
+            self.buffer += f"<{tag.name}>"
 
-    def handle_untag(self, name: str) -> None:
-        if name == "p":
+    def handle_untag(self, tag: Tag) -> None:
+        if tag.name == "p":
             self.end_block()
-        elif name == "blockquote":
+        elif tag.name == "blockquote":
             self.indent -= 4
             self.end_block()
-        elif name == "div":
+        elif tag.name == "div":
             self.end_block()
+        elif tag.name == "var":
+            pass
+        elif tag.name == "sup":
+            pass
+        elif tag.name == "sub":
+            pass
         else:
-            self.buffer += f"</{name}>"
+            self.buffer += f"</{tag.name}>"
 
     def start_block(self) -> None:
         self.buffer += " " * self.indent
 
     def end_block(self) -> None:
-        self.buffer += "\n\n"
+        self.buffer = self.buffer.strip() + "\n"
 
     def consume(self, element: PageElement) -> None:
         if isinstance(element, BeautifulSoup):
             for ch in element.children:
                 self.consume(ch)
         elif isinstance(element, Tag):
-            self.handle_tag(element.name)
+            self.handle_tag(element)
             for ch in element.children:
                 self.consume(ch)
-            self.handle_untag(element.name)
+            self.handle_untag(element)
         elif isinstance(element, NavigableString):
-            self.buffer += str(element).strip()
+            self.buffer += str(element)
         else:
             raise Exception(f"UNRECOGNIZED ELEMENT: {element}")
 

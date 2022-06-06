@@ -2,5 +2,6 @@
 {description}
 """
 
+
 def solve_problem() -> int:
     ...
