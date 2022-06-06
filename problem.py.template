@@ -1,5 +1,5 @@
 """
-TODO: paste problem statement
+{description}
 """
 
 def solve_problem() -> int:

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+import dataclasses
 import itertools
 import os
-import shutil
 from importlib import import_module
-from typing import Dict
+from typing import Dict, List
+from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 
 import click
+import requests
 
 TEMPLATE_FILE = "problem.py.template"
 ANSWER_FILE = "answers.bin"
@@ -74,6 +76,71 @@ def run_problem(n: int) -> int:
     return module.solve_problem()
 
 
+@dataclasses.dataclass
+class Formatter:
+    """
+    Formats HTML problem descriptions into plain text
+    """
+
+    indent: int = 0
+    buffer: str = ""
+
+    def handle_tag(self, name: str) -> None:
+        if name == "p":
+            self.start_block()
+        elif name == "blockquote":
+            self.indent += 4
+            self.start_block()
+        elif name == "div":
+            self.start_block()
+        else:
+            self.buffer += f"<{name}>"
+
+    def handle_untag(self, name: str) -> None:
+        if name == "p":
+            self.end_block()
+        elif name == "blockquote":
+            self.indent -= 4
+            self.end_block()
+        elif name == "div":
+            self.end_block()
+        else:
+            self.buffer += f"</{name}>"
+
+    def start_block(self) -> None:
+        self.buffer += " " * self.indent
+
+    def end_block(self) -> None:
+        self.buffer += "\n\n"
+
+    def consume(self, element: PageElement) -> None:
+        if isinstance(element, BeautifulSoup):
+            for ch in element.children:
+                self.consume(ch)
+        elif isinstance(element, Tag):
+            self.handle_tag(element.name)
+            for ch in element.children:
+                self.consume(ch)
+            self.handle_untag(element.name)
+        elif isinstance(element, NavigableString):
+            self.buffer += str(element).strip()
+        else:
+            raise Exception(f"UNRECOGNIZED ELEMENT: {element}")
+
+    def output(self) -> str:
+        return self.buffer.strip()
+
+
+def get_problem_description(n: int) -> str:
+    # TODO error handling (just capture from outside this fn)
+    resp = requests.get(f"https://projecteuler.net/minimal={n}")
+    soup = BeautifulSoup(resp.text.strip(), "html.parser")
+
+    fmt = Formatter()
+    fmt.consume(soup)
+    return fmt.output()
+
+
 # ==== CLI Commands ====
 
 
@@ -93,7 +160,13 @@ def create(number: int) -> None:
     if os.path.exists(dst_path):
         raise Exception(f"Refusing to overwrite existing file {dst_path}")
 
-    shutil.copy(TEMPLATE_FILE, dst_path)
+    with open(TEMPLATE_FILE, "r") as f:
+        template_contents = f.read()
+
+    output = template_contents.format(description=get_problem_description(number))
+
+    with open(dst_path, "w", encoding="utf-8") as f:
+        f.write(output)
 
 
 @cli.command()
@@ -145,7 +218,6 @@ def show() -> None:
     Show the entire answer list.
     This is nice for checking that I wrote scramble and unscramble correctly.
     """
-
     answers = parse_answer_file()
     for (n, answer) in answers.items():
         print(f"Problem #{n:04}: {answer}")
