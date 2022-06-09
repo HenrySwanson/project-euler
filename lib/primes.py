@@ -1,12 +1,11 @@
-from bisect import bisect_left
 import dataclasses
 import math
-from typing import Iterator, List, Optional
+from typing import Iterator, Optional
 
-# Some global state for caching primes
-# TODO make some actual state out of this, with methods and all
-_PRIMES: List[int] = [2]
-_NEXT_INTEGER_TO_CHECK: int = 3
+from lib.prime_state import PrimeCache
+
+# Some global state, don't worry about it
+_PRIME_STATE = PrimeCache()
 
 
 @dataclasses.dataclass
@@ -15,64 +14,21 @@ class Factor:
     multiplicity: int
 
 
+def is_prime(n: int) -> bool:
+    return _PRIME_STATE.is_prime(n)
+
+
 def iter_primes(cutoff: Optional[int] = None) -> Iterator[int]:
-    for p in _PRIMES:
+    for p in _PRIME_STATE.iter_primes():
         if cutoff is not None and p >= cutoff:
             return
         yield p
-
-    yield from _iter_primes_from_end(cutoff)
-
-
-def _iter_primes_from_end(cutoff: Optional[int]) -> Iterator[int]:
-    # TODO: is there any chicanery that can occur if we have two of these iterators
-    # going at once? probably...
-
-    global _NEXT_INTEGER_TO_CHECK
-
-    # Helper fn that checks against the list of known primes.
-    # Assumes that _PRIMES is sorted and that n is not much higher than _PRIMES[-1]
-    def test(n: int) -> bool:
-        for p in _PRIMES:
-            if n % p == 0:
-                return False
-            if p * p > n:
-                break
-        return True
-
-    while True:
-        n = _NEXT_INTEGER_TO_CHECK
-        if cutoff is not None and n >= cutoff:
-            return
-
-        # Check if n is prime, and if so, yield it
-        if test(n):
-            yield n
-            _PRIMES.append(n)
-
-        # In any case, bump n
-        _NEXT_INTEGER_TO_CHECK += 2
-
-
-def is_prime(n: int) -> bool:
-    if n < _NEXT_INTEGER_TO_CHECK:
-        idx = bisect_left(_PRIMES, n)
-        return idx < len(_PRIMES) and _PRIMES[idx] == n
-
-    # TODO: is it cheaper to try factoring instead, because of the sqrt bound?
-    for p in _iter_primes_from_end(cutoff=None):
-        if p == n:
-            return True
-        if p > n:
-            return False
-
-    raise AssertionError()
 
 
 def factor(n: int) -> Iterator[Factor]:
     assert n != 0, "0 can be factored forever"
 
-    for p in iter_primes():
+    for p in _PRIME_STATE.iter_primes():
         multiplicity = 0
         while n % p == 0:
             multiplicity += 1

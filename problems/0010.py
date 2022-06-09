@@ -10,9 +10,4 @@ N = 2_000_000
 
 
 def solve_problem() -> int:
-    total = 0
-    for p in iter_primes():
-        if p >= N:
-            break
-        total += p
-    return total
+    return sum(iter_primes(cutoff=N))
