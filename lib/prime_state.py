@@ -75,11 +75,10 @@ class PrimeCache:
             idx = bisect_left(self.primes, n)
             return idx < len(self.primes) and self.primes[idx] == n
 
-        # TODO: is it cheaper to try factoring instead, because of the sqrt bound?
-        for p in self._iter_primes_from_end():
-            if p == n:
+        for p in self.iter_primes():
+            if p * p > n:
                 return True
-            if p > n:
+            if n % p == 0:
                 return False
 
         raise AssertionError()

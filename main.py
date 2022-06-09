@@ -18,14 +18,12 @@ ANSWER_FILE = "answers.bin"
 # - maybe make scramble and unscramble depend on an un-checked-in file
 #   that i can conjure from memory?
 #   - nah, too much effort
-# - include timing info per-problem?
 # - tests
 # - if i forget to save, how can i run a command to check that?
 # - `next` command?
 # - an interactive mode would be cool!
 #  - open 25, create, run, run, ..., run, save
 #  - would have to force a reload of all py files though...
-# - i wonder if i can yank the problem descriptions right from the site?
 # - run and check are pretty similar, it'd be nice to have them unified
 #   - both run the solver, and the only difference is whether there's an answer already saved
 
@@ -96,11 +94,16 @@ class Formatter:
             self.start_block()
         elif tag.name == "var":
             pass
+        elif tag.name == "i":
+            pass
         elif tag.name == "sup":
             # TODO fractions are sometimes written as ^a/_b
             self.buffer += "^"
         elif tag.name == "sub":
             self.buffer += "_"
+        elif tag.name == "br":
+            self.end_block()
+            self.start_block()
         else:
             self.buffer += f"<{tag.name}>"
 
@@ -114,9 +117,13 @@ class Formatter:
             self.end_block()
         elif tag.name == "var":
             pass
+        elif tag.name == "i":
+            pass
         elif tag.name == "sup":
             pass
         elif tag.name == "sub":
+            pass
+        elif tag.name == "br":
             pass
         else:
             self.buffer += f"</{tag.name}>"
@@ -137,7 +144,7 @@ class Formatter:
                 self.consume(ch)
             self.handle_untag(element)
         elif isinstance(element, NavigableString):
-            self.buffer += str(element)
+            self.buffer += str(element.lstrip("\n"))
         else:
             raise Exception(f"UNRECOGNIZED ELEMENT: {element}")
 
@@ -168,10 +175,13 @@ def cli() -> None:
     "number",
     type=int,
 )
-def create(number: int) -> None:
+@click.option(
+    "-f", "--force", is_flag=True, default=False, help="Overwrite existing answer"
+)
+def create(number: int, force: bool) -> None:
     """Copy the template file into the expected location, unless it already exists"""
     dst_path = f"problems/{filename(number)}.py"
-    if os.path.exists(dst_path):
+    if os.path.exists(dst_path) and not force:
         raise Exception(f"Refusing to overwrite existing file {dst_path}")
 
     with open(TEMPLATE_FILE, "r") as f:
@@ -188,41 +198,38 @@ def create(number: int) -> None:
     "number",
     type=int,
 )
-def run(number: int) -> None:
+@click.option("-s", "--save", is_flag=True, default=False, help="Save answer to file")
+@click.option(
+    "-f",
+    "--force",
+    is_flag=True,
+    default=False,
+    help="If saving, save even if there's already an answer in the file",
+)
+def run(number: int, save: bool, force: bool) -> None:
     """
     Run the solver and print the answer
     """
     answer = run_problem(number)
     print(answer)
 
+    if not save:
+        return
 
-@cli.command()
-@click.argument(
-    "number",
-    type=int,
-)
-@click.option(
-    "-f", "--force", is_flag=True, default=False, help="Overwrite existing answer"
-)
-def save(number: int, force: bool) -> None:
-    """
-    Solve the problem and save the answer to the answers file
-    """
     answers = parse_answer_file()
     if number in answers and not force:
         raise Exception(f"Answer is already in list")
 
-    new_answer = run_problem(number)
     old_answer = answers.get(number)
-    if old_answer is not None and old_answer != new_answer:
+    if old_answer is not None and old_answer != answer:
         assert force, "shouldn't have been able to get here w/o --force"
         print(
             f"WARNING: overwriting value for problem {number}: "
-            f"{old_answer} -> {new_answer}"
+            f"{old_answer} -> {answer}"
         )
 
     # Actually write the answer and save it
-    answers[number] = run_problem(number)
+    answers[number] = answer
     save_answer_file(answers)
 
 
@@ -265,6 +272,7 @@ def check(number: int) -> None:
             check_single(n)
     else:
         check_single(number)
+
 
 @cli.command()
 @click.argument(
