@@ -4,6 +4,7 @@ import dataclasses
 import itertools
 import os
 from importlib import import_module
+from time import perf_counter
 from typing import Dict, List
 from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 
@@ -264,6 +265,33 @@ def check(number: int) -> None:
             check_single(n)
     else:
         check_single(number)
+
+@cli.command()
+@click.argument(
+    "number",
+    type=int,
+)
+def time(number: int) -> None:
+    """
+    Run the indicated problem several times and give some stats on the timing.
+    """
+    # TODO: how to clear cached data more generally?
+    from lib.primes import _PRIME_STATE
+
+    run_times = []
+    for i in range(10):
+        # Clear the cache
+        _PRIME_STATE.clear()
+        # Run the problem
+        start = perf_counter()
+        run_problem(number)
+        elapsed = perf_counter() - start
+        run_times.append(elapsed)
+        # Print to reassure the user something's happening
+        print(f"Trial #{i+1}: {elapsed:.3f}s")
+
+    print("Test complete!")
+    print(f"Mean: {sum(run_times)/len(run_times)}")
 
 
 if __name__ == "__main__":

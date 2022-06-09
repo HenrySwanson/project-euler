@@ -8,6 +8,10 @@ class PrimeCache:
     primes: List[int] = dataclasses.field(default_factory=lambda: [2])
     next_to_check: int = 3
 
+    def clear(self) -> None:
+        self.primes = [2]
+        self.next_to_check = 3
+
     def iter_primes(self) -> Iterator[int]:
         for p in self.primes:
             yield p
