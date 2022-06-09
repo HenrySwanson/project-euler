@@ -12,6 +12,31 @@ class PrimeCache:
         self.primes = [2]
         self.next_to_check = 3
 
+    def init_sieve_of_eratosthenes(self, limit: int) -> None:
+        # Skip if we don't need it
+        if limit <= self.next_to_check:
+            return
+
+        # TODO: re-use partial knowledge of primes?
+        sieve = [True for _ in range(limit)]
+        sieve[0] = sieve[1] = False
+        for p in range(limit):
+            # If this number has been marked off, skip it
+            if not sieve[p]:
+                continue
+            # If p^2 >= n, then we're done
+            if p * p >= limit:
+                break
+            # Otherwise, start marking off multiples of p, starting at p^2
+            k = p
+            while p * k < limit:
+                sieve[p * k] = False
+                k += 1
+
+        self.primes = [p for (p, is_prime) in enumerate(sieve) if is_prime]
+        # some care here -- ensure that it's odd
+        self.next_to_check = limit | 1
+
     def iter_primes(self) -> Iterator[int]:
         for p in self.primes:
             yield p

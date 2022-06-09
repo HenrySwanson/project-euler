@@ -19,6 +19,9 @@ def is_prime(n: int) -> bool:
 
 
 def iter_primes(cutoff: Optional[int] = None) -> Iterator[int]:
+    if cutoff is not None:
+        _PRIME_STATE.init_sieve_of_eratosthenes(cutoff)
+        
     for p in _PRIME_STATE.iter_primes():
         if cutoff is not None and p >= cutoff:
             return

@@ -291,7 +291,7 @@ def time(number: int) -> None:
         print(f"Trial #{i+1}: {elapsed:.3f}s")
 
     print("Test complete!")
-    print(f"Mean: {sum(run_times)/len(run_times)}")
+    print(f"Mean: {sum(run_times)/len(run_times):.3f}")
 
 
 if __name__ == "__main__":
