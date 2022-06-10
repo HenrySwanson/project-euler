@@ -9,8 +9,8 @@ Find the sum of the digits in the number 100!
 
 from math import factorial
 
-from lib.misc import digits
+from lib.misc import to_digits
 
 
 def solve_problem() -> int:
-    return sum(digits(factorial(100)))
+    return sum(to_digits(factorial(100)))

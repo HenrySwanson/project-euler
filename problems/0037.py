@@ -9,7 +9,7 @@ NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
 
 
 from typing import Iterator, List
-from lib.misc import from_digits, digits as to_digits
+from lib.misc import from_digits, to_digits
 from lib.primes import is_prime
 
 

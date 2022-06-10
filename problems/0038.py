@@ -9,7 +9,7 @@ What is the largest 1 to 9 pandigital 9-digit number that can be formed as the c
 """
 
 from typing import Iterator, List
-from lib.misc import digits as to_digits, from_digits
+from lib.misc import to_digits, from_digits
 
 
 def solve_problem() -> int:

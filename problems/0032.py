@@ -8,7 +8,7 @@ Find the sum of all products whose multiplicand/multiplier/product identity can 
 HINT: Some products can be obtained in more than one way so be sure to only include it once in your sum.
 """
 
-from lib.misc import digits
+from lib.misc import to_digits
 
 
 def solve_problem() -> int:
@@ -32,5 +32,5 @@ def solve_problem() -> int:
 
 def is_pandigital_product(x: int, y: int) -> bool:
     product = x * y
-    all_digits = list(digits(x)) + list(digits(y)) + list(digits(product))
+    all_digits = list(to_digits(x)) + list(to_digits(y)) + list(to_digits(product))
     return sorted(all_digits) == list(range(1, 10))

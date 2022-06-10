@@ -10,7 +10,7 @@ How many circular primes are there below one million?
 import itertools
 from time import time
 from lib.primes import is_prime, iter_primes
-from lib.misc import digits, from_digits
+from lib.misc import to_digits, from_digits
 
 
 def solve_problem() -> int:

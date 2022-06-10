@@ -38,7 +38,7 @@ def lcm(a: int, b: int) -> int:
     return math.lcm(a, b)
 
 
-def digits(n: int) -> Iterator[int]:
+def to_digits(n: int) -> Iterator[int]:
     return iter(int(x) for x in str(n))
 
 

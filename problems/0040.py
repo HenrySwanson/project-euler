@@ -8,7 +8,7 @@ d_1 × d_10 × d_100 × d_1000 × d_10000 × d_100000 × d_1000000
 
 
 from math import prod
-from lib.misc import digits
+from lib.misc import to_digits
 
 
 def solve_problem() -> int:
@@ -42,4 +42,4 @@ def d(n: int) -> int:
     # into the number we need to index
     number = n // k + ten_power
     idx = n % k
-    return list(digits(number))[idx]
+    return list(to_digits(number))[idx]
