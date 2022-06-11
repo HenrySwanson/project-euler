@@ -2,7 +2,16 @@ import collections
 import itertools
 from lib2to3.pgen2.token import OP
 import math
-from typing import Iterable, Iterator, List, Optional, Sequence, Tuple, TypeVar
+from typing import (
+    Callable,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    TypeVar,
+)
 
 T = TypeVar("T")
 
@@ -29,6 +38,15 @@ def triangle(n: int) -> int:
     return n * (n + 1) // 2
 
 
+def pentagonal(n: int) -> int:
+    # Convention: 0 -> 0, 1 -> 1, 2 -> 5
+    return n * (3 * n - 1) // 2
+
+
+def hexagonal(n: int) -> int:
+    return n * (2 * n - 1)
+
+
 def sum_of_n_squares(n: int) -> int:
     return n * (n + 1) * (2 * n + 1) // 6
 
@@ -45,6 +63,23 @@ def to_digits(n: int) -> Iterator[int]:
 def from_digits(it: Iterable[int]) -> int:
     # TODO: is this really faster than arithmetic?
     return int("".join(str(d) for d in it))
+
+
+# TODO: don't like name :(
+def increasing_seq_cache(f: Callable[[int], int]) -> Callable[[int], bool]:
+    max_k = 0
+    max_fk = f(0)
+    cache = {max_fk}
+
+    def inner(n: int) -> bool:
+        nonlocal max_k, max_fk, cache
+        while n > max_fk:
+            max_k += 1
+            max_fk = f(max_k)
+            cache.add(max_fk)
+        return n in cache
+
+    return inner
 
 
 # TODO: there's gotta be something in python that does this

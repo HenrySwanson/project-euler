@@ -28,6 +28,10 @@ def iter_primes(cutoff: Optional[int] = None) -> Iterator[int]:
         yield p
 
 
+def init_primes_up_to(cutoff: int) -> None:
+    _PRIME_STATE.init_sieve_of_eratosthenes(cutoff)
+
+
 def factor(n: int) -> Iterator[Factor]:
     assert n != 0, "0 can be factored forever"
 

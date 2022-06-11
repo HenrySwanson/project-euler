@@ -5,7 +5,7 @@ import itertools
 import os
 from importlib import import_module
 from time import perf_counter
-from typing import Dict, List
+from typing import Dict, List, Literal, Optional
 from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 
 import click
@@ -83,6 +83,7 @@ class Formatter:
 
     indent: int = 0
     buffer: str = ""
+    list_type: Optional[Literal["-"]] = None
 
     def handle_tag(self, tag: Tag) -> None:
         if tag.name == "p":
@@ -104,6 +105,12 @@ class Formatter:
         elif tag.name == "br":
             self.end_block()
             self.start_block()
+        elif tag.name == "ul":
+            self.list_type = "-"
+        elif tag.name == "li":
+            self.start_block()
+            if self.list_type is not None:
+                self.buffer += self.list_type + " "
         else:
             self.buffer += f"<{tag.name}>"
 
@@ -125,6 +132,10 @@ class Formatter:
             pass
         elif tag.name == "br":
             pass
+        elif tag.name == "ul":
+            pass
+        elif tag.name == "li":
+            self.end_block()
         else:
             self.buffer += f"</{tag.name}>"
 
