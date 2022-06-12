@@ -9,6 +9,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
     TypeVar,
 )
@@ -67,9 +68,9 @@ def from_digits(it: Iterable[int]) -> int:
 
 # TODO: don't like name :(
 def increasing_seq_cache(f: Callable[[int], int]) -> Callable[[int], bool]:
-    max_k = 0
-    max_fk = f(0)
-    cache = {max_fk}
+    max_k: int = 0
+    max_fk: int = f(0)
+    cache: Set[int] = {max_fk}
 
     def inner(n: int) -> bool:
         nonlocal max_k, max_fk, cache
@@ -98,7 +99,7 @@ def _ext_slice(s: Sequence[T], start: Optional[int], end: Optional[int]) -> Sequ
 
 def parse_numeric_list(
     input: str, start_line: Optional[int], end_line: Optional[int]
-) -> Tuple[int]:
+) -> Tuple[int, ...]:
     return tuple(
         int(line) for line in _ext_slice(input.splitlines(), start_line, end_line)
     )
@@ -106,7 +107,7 @@ def parse_numeric_list(
 
 def parse_numeric_grid(
     input: str, start_line: Optional[int], end_line: Optional[int]
-) -> Tuple[Tuple[int]]:
+) -> Tuple[Tuple[int, ...], ...]:
     return tuple(
         tuple(int(x) for x in line.split(" "))
         for line in _ext_slice(input.splitlines(), start_line, end_line)

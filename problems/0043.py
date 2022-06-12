@@ -36,7 +36,6 @@ def solve_problem() -> int:
             last_three[0], last_three[1], FACTOR_ORDER[1:], allowed_digits
         ):
             total += from_digits(list(d1_to_d7) + list(last_three))
-            print(from_digits(list(d1_to_d7) + list(last_three)))
 
     return total
 

@@ -29,7 +29,7 @@ def solve_problem() -> int:
     return den // gcd
 
 
-def gen_curious(a: int, b: int, c: int) -> List[Tuple[int, int, int]]:
+def gen_curious(a: int, b: int, c: int) -> List[Tuple[int, int]]:
     results = []
     ac = 10 * a + c
     bc = 10 * b + c

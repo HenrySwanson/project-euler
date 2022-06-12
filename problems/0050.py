@@ -20,10 +20,11 @@ def solve_problem() -> int:
     # Then find out what sequence length is reasonable to start with. If
     # the initial segment of length k sums to > N, we don't need to consider runs
     # of length k or more.
+    max_len = len(primes)
     for k in range(len(primes)):
+        max_len = k
         if sum(primes[:k]) > N:
             break
-    max_len = k
 
     # Now, we sum over windows of length k, k-1, k-2, ... until we find a prime
     for n in reversed(range(max_len)):
@@ -32,7 +33,6 @@ def solve_problem() -> int:
 
             # Okay, no sense exploring things higher than a million
             if s >= N:
-                print(n, k, s)
                 break
 
             if is_prime(s):
