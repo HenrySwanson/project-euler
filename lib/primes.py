@@ -51,6 +51,10 @@ def factor(n: int) -> Iterator[Factor]:
         yield Factor(prime=n, multiplicity=1)
 
 
+def num_distinct_prime_factors(n: int) -> int:
+    return sum(1 for _ in factor(n))
+
+
 def num_divisors(n: int) -> int:
     # Number of divisors is prod(k+1) where n = prod p^k
     return math.prod(f.multiplicity + 1 for f in factor(n))
