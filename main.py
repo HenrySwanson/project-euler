@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 
 import click
 import requests
+from cli.answer import parse_answer_file, save_answer_file
+
+from cli.format import Formatter
 
 TEMPLATE_FILE = "problem.py.template"
 ANSWER_FILE = "answers.bin"
@@ -32,135 +35,9 @@ def filename(n: int) -> str:
     return f"{n:04}"
 
 
-# I put in some very basic fuckery here so that I'm not just writing a list of
-# plaintext answers directly to GitHub.
-# Is it unbreakable encryption? No. But if someone wants the answers from my repo
-# they could just run the problem solvers anyways, so whatever.
-
-
-def scramble(input: str) -> bytes:
-    nonsense = itertools.cycle(range(256))
-    return bytes(x ^ y for (x, y) in zip(input.encode(), nonsense))
-
-
-def unscramble(input: bytes) -> str:
-    nonsense = itertools.cycle(range(256))
-    return bytes(x ^ y for (x, y) in zip(input, nonsense)).decode()
-
-
-def parse_answer_file() -> Dict[int, int]:
-    with open(ANSWER_FILE, "rb") as f:
-        contents: bytes = f.read()
-
-    if not contents:
-        return {}
-
-    answers = {}
-    for row in unscramble(contents).split("\n"):
-        x, y = row.split(":")
-        answers[int(x)] = int(y)
-    return answers
-
-
-def save_answer_file(answers: Dict[int, int]) -> None:
-    serialized = "\n".join(f"{n}:{answer}" for (n, answer) in sorted(answers.items()))
-    contents = scramble(serialized)
-
-    with open(ANSWER_FILE, "wb") as f:
-        f.write(contents)
-
-
 def run_problem(n: int) -> int:
     module = import_module(f"problems.{filename(n)}")
     return module.solve_problem()
-
-
-@dataclasses.dataclass
-class Formatter:
-    """
-    Formats HTML problem descriptions into plain text
-    """
-
-    indent: int = 0
-    buffer: str = ""
-    list_type: Optional[Literal["-"]] = None
-
-    def handle_tag(self, tag: Tag) -> None:
-        if tag.name == "p":
-            self.start_block()
-        elif tag.name == "blockquote":
-            self.indent += 4
-            self.start_block()
-        elif tag.name == "div":
-            self.start_block()
-        elif tag.name == "var":
-            pass
-        elif tag.name == "i":
-            pass
-        elif tag.name == "sup":
-            # TODO fractions are sometimes written as ^a/_b
-            self.buffer += "^"
-        elif tag.name == "sub":
-            self.buffer += "_"
-        elif tag.name == "br":
-            self.end_block()
-            self.start_block()
-        elif tag.name == "ul":
-            self.list_type = "-"
-        elif tag.name == "li":
-            self.start_block()
-            if self.list_type is not None:
-                self.buffer += self.list_type + " "
-        else:
-            self.buffer += f"<{tag.name}>"
-
-    def handle_untag(self, tag: Tag) -> None:
-        if tag.name == "p":
-            self.end_block()
-        elif tag.name == "blockquote":
-            self.indent -= 4
-            self.end_block()
-        elif tag.name == "div":
-            self.end_block()
-        elif tag.name == "var":
-            pass
-        elif tag.name == "i":
-            pass
-        elif tag.name == "sup":
-            pass
-        elif tag.name == "sub":
-            pass
-        elif tag.name == "br":
-            pass
-        elif tag.name == "ul":
-            pass
-        elif tag.name == "li":
-            self.end_block()
-        else:
-            self.buffer += f"</{tag.name}>"
-
-    def start_block(self) -> None:
-        self.buffer += " " * self.indent
-
-    def end_block(self) -> None:
-        self.buffer = self.buffer.strip() + "\n"
-
-    def consume(self, element: PageElement) -> None:
-        if isinstance(element, BeautifulSoup):
-            for ch in element.children:
-                self.consume(ch)
-        elif isinstance(element, Tag):
-            self.handle_tag(element)
-            for ch in element.children:
-                self.consume(ch)
-            self.handle_untag(element)
-        elif isinstance(element, NavigableString):
-            self.buffer += str(element.lstrip("\n"))
-        else:
-            raise Exception(f"UNRECOGNIZED ELEMENT: {element}")
-
-    def output(self) -> str:
-        return self.buffer.strip()
 
 
 def get_problem_description(n: int) -> str:
@@ -227,7 +104,7 @@ def run(number: int, save: bool, force: bool) -> None:
     if not save:
         return
 
-    answers = parse_answer_file()
+    answers = parse_answer_file(ANSWER_FILE)
     if number in answers and not force:
         raise Exception(f"Answer is already in list")
 
@@ -241,7 +118,7 @@ def run(number: int, save: bool, force: bool) -> None:
 
     # Actually write the answer and save it
     answers[number] = answer
-    save_answer_file(answers)
+    save_answer_file(ANSWER_FILE, answers)
 
 
 @cli.command()
@@ -250,7 +127,7 @@ def show() -> None:
     Show the entire answer list.
     This is nice for checking that I wrote scramble and unscramble correctly.
     """
-    answers = parse_answer_file()
+    answers = parse_answer_file(ANSWER_FILE)
     for (n, answer) in answers.items():
         print(f"Problem #{n:04}: {answer}")
 
@@ -266,7 +143,7 @@ def check(number: int) -> None:
     Solve all problems and check if the answers match those in the cache.
     This is nice for checking the validity of any refactoring I'm doing.
     """
-    saved_answers: Dict[int, int] = parse_answer_file()
+    saved_answers: Dict[int, int] = parse_answer_file(ANSWER_FILE)
 
     def check_single(n: int) -> None:
         saved = saved_answers[n]
