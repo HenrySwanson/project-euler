@@ -1,18 +1,15 @@
 #!/usr/bin/env python
 
-import dataclasses
-import itertools
 import os
 from importlib import import_module
 from time import perf_counter
-from typing import Dict, List, Literal, Optional
-from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
+from typing import Dict
 
 import click
 import requests
 from cli.answer import parse_answer_file, save_answer_file
 
-from cli.format import Formatter
+from cli.format import htmlToDocstring
 
 TEMPLATE_FILE = "problem.py.template"
 ANSWER_FILE = "answers.bin"
@@ -43,11 +40,7 @@ def run_problem(n: int) -> int:
 def get_problem_description(n: int) -> str:
     # TODO error handling (just capture from outside this fn)
     resp = requests.get(f"https://projecteuler.net/minimal={n}")
-    soup = BeautifulSoup(resp.text.strip(), "html.parser")
-
-    fmt = Formatter()
-    fmt.consume(soup)
-    return fmt.output()
+    return htmlToDocstring(resp.text)
 
 
 # ==== CLI Commands ====
