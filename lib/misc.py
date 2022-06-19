@@ -52,6 +52,19 @@ def sum_of_n_squares(n: int) -> int:
     return n * (n + 1) * (2 * n + 1) // 6
 
 
+def binomial(n: int, k: int) -> int:
+    if not 0 <= k <= n:
+        return 0
+
+    if 2 * k > n:
+        k = n - k
+
+    num = math.prod(n - i for i in range(k))
+    den = math.prod(i + 1 for i in range(k))
+    assert num % den == 0
+    return num // den
+
+
 def lcm(a: int, b: int) -> int:
     # pyre-fixme[16]: Why does pyre think this doesn't exist? Wrong stdlib version?
     return math.lcm(a, b)
@@ -64,6 +77,11 @@ def to_digits(n: int) -> Iterator[int]:
 def from_digits(it: Iterable[int]) -> int:
     # TODO: is this really faster than arithmetic?
     return int("".join(str(d) for d in it))
+
+
+def is_palindrome(n: int) -> bool:
+    digits = list(to_digits(n))
+    return digits == list(reversed(digits))
 
 
 # TODO: don't like name :(
@@ -111,4 +129,13 @@ def parse_numeric_grid(
     return tuple(
         tuple(int(x) for x in line.split(" "))
         for line in _ext_slice(input.splitlines(), start_line, end_line)
+    )
+
+
+# Copied from itertools recipes
+def powerset(iterable: Iterable[T]) -> Iterable[Tuple[T, ...]]:
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return itertools.chain.from_iterable(
+        itertools.combinations(s, r) for r in range(len(s) + 1)
     )
