@@ -43,5 +43,5 @@ def gen_right_truncatable_primes(n: int) -> Iterator[int]:
 
 
 def is_left_truncatable(n: int) -> bool:
-    digits = list(to_digits(n))
+    digits = to_digits(n)
     return all(is_prime(from_digits(digits[i:])) for i in range(len(digits)))

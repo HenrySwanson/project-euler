@@ -42,4 +42,4 @@ def d(n: int) -> int:
     # into the number we need to index
     number = n // k + ten_power
     idx = n % k
-    return list(to_digits(number))[idx]
+    return to_digits(number)[idx]

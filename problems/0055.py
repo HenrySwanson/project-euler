@@ -38,5 +38,5 @@ def is_probably_lychrel(n: int) -> bool:
 
 
 def reverse_and_add(n: int) -> int:
-    backwards_n = from_digits(reversed(list(to_digits(n))))
+    backwards_n = from_digits(reversed(to_digits(n)))
     return n + backwards_n

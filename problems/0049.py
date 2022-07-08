@@ -27,8 +27,8 @@ def solve_problem() -> int:
                 continue
 
             # Are p and q rearrangements?
-            p_digits = list(to_digits(p))
-            q_digits = list(to_digits(q))
+            p_digits = to_digits(p)
+            q_digits = to_digits(q)
             if sorted(p_digits) != sorted(q_digits):
                 continue
 
@@ -36,7 +36,7 @@ def solve_problem() -> int:
             r = 2 * q - p
 
             # Is r prime and a rearrangement of p/q?
-            r_digits = list(to_digits(r))
+            r_digits = to_digits(r)
             if is_prime(r) and sorted(p_digits) == sorted(r_digits):
                 return from_digits(d for d in p_digits + q_digits + r_digits)
 

@@ -32,5 +32,5 @@ def solve_problem() -> int:
 
 def is_pandigital_product(x: int, y: int) -> bool:
     product = x * y
-    all_digits = list(to_digits(x)) + list(to_digits(y)) + list(to_digits(product))
+    all_digits = to_digits(x) + to_digits(y) + to_digits(product)
     return sorted(all_digits) == list(range(1, 10))

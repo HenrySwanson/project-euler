@@ -70,8 +70,8 @@ def lcm(a: int, b: int) -> int:
     return math.lcm(a, b)
 
 
-def to_digits(n: int) -> Iterator[int]:
-    return iter(int(x) for x in str(n))
+def to_digits(n: int) -> List[int]:
+    return [int(x) for x in str(n)]
 
 
 def from_digits(it: Iterable[int]) -> int:
@@ -80,7 +80,7 @@ def from_digits(it: Iterable[int]) -> int:
 
 
 def is_palindrome(n: int) -> bool:
-    digits = list(to_digits(n))
+    digits = to_digits(n)
     return digits == list(reversed(digits))
 
 

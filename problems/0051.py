@@ -53,7 +53,7 @@ def solve_problem_n(n: int) -> Optional[int]:
 
 
 def patterns(p: int) -> Iterator[str]:
-    digits = list(to_digits(p))
+    digits = to_digits(p)
 
     # Split up digits
     counts = [[] for _ in range(10)]
