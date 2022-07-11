@@ -79,6 +79,11 @@ def from_digits(it: Iterable[int]) -> int:
     return int("".join(str(d) for d in it))
 
 
+def num_digits(n: int) -> int:
+    assert n > 0, "Input must be positive"
+    return int(math.log10(n)) + 1
+
+
 def is_palindrome(n: int) -> bool:
     digits = to_digits(n)
     return digits == list(reversed(digits))
