@@ -3,7 +3,7 @@
 import os
 from importlib import import_module
 from time import perf_counter
-from typing import Dict
+from typing import Dict, Iterable, Optional, List, Tuple
 
 import click
 import requests
@@ -153,6 +153,87 @@ def check(number: int) -> None:
             check_single(n)
     else:
         check_single(number)
+
+
+@cli.command()
+def status() -> None:
+    """
+    Check which problems have been done and which are not.
+
+    Helpful for checking if I forgot to save an answer.
+    """
+    problems_saved = parse_answer_file(ANSWER_FILE).keys()
+    problems_with_files = set()
+    for file in os.listdir("problems"):
+        try:
+            problem_number = int(file.removesuffix(".py"))
+            problems_with_files.add(problem_number)
+        except ValueError:
+            pass
+
+    def intervalize(numbers: Iterable[int]) -> List[Tuple[int, int]]:
+        numbers = sorted(numbers)
+
+        if not numbers:
+            return []
+
+        intervals = []
+
+        start = numbers[0]
+        for prev, n in zip(numbers, numbers[1:]):
+            if start is None:
+                start = prev
+
+            if n == prev + 1:
+                continue
+
+            intervals.append((start, prev))
+            start = n
+
+        # Make sure to close the last interval.
+        intervals.append((start, numbers[-1]))
+
+        return intervals
+        
+
+    def print_with_ranges(
+        numbers: Iterable[int], infinite_tail: Optional[int] = None
+    ) -> None:
+        intervals = intervalize(numbers)
+
+        # If there's an infinite tail, and it's adjacent to the final interval,
+        # merge that interval into the tail.
+        if infinite_tail is not None and len(intervals) > 0:
+            (start, end) = intervals[-1]
+            if infinite_tail == end + 1:
+                infinite_tail = start
+                intervals.pop()
+
+        # Stringify things
+        output = [f"{start}-{end}" if start != end else f"{start}" for (start, end) in intervals]
+
+        if infinite_tail is not None:
+            output.append(f"{infinite_tail}-inf")
+
+        print(", ".join(output))
+  
+
+    print("Problems completed:")
+    print_with_ranges(problems_with_files & problems_saved)
+
+    print("Problems downloaded but incomplete:")
+    print_with_ranges(problems_with_files - problems_saved)
+
+    if not problems_saved <= problems_with_files:
+        print("Problems complete but not downloaded (???):")
+        print_with_ranges(problems_saved - problems_with_files)
+
+    problems_known = problems_with_files | problems_saved
+    first_unknown = max(problems_known) + 1 if problems_known else 1
+    print("Problems remaining:")
+    print_with_ranges(
+        set(range(1, first_unknown)) - problems_known, infinite_tail=first_unknown
+    )
 
 
 @cli.command()
