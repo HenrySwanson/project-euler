@@ -63,7 +63,13 @@ def num_divisors(n: int) -> int:
 def sum_divisors(n: int) -> int:
     # Sum of divisors is prod(1 + p + ... + p^k) where n = prod(p^k)
     # Equivalently, (p^(k+1) - 1)/(p-1)
-    result = 1
     return math.prod(
         (f.prime ** (f.multiplicity + 1) - 1) // (f.prime - 1) for f in factor(n)
     )
+
+def totient(n: int) -> int:
+    # n * prod (1 - 1/p)
+    factors = list(factor(n))
+    num = math.prod(f.prime - 1 for f in factors)
+    den = math.prod(f.prime for f in factors)
+    return n * num // den

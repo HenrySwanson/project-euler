@@ -1,6 +1,5 @@
-import collections
+from fractions import Fraction
 import itertools
-from lib2to3.pgen2.token import OP
 import math
 from typing import (
     Callable,
@@ -39,6 +38,10 @@ def triangle(n: int) -> int:
     return n * (n + 1) // 2
 
 
+def square(n: int) -> int:
+    return n * n
+
+
 def pentagonal(n: int) -> int:
     # Convention: 0 -> 0, 1 -> 1, 2 -> 5
     return n * (3 * n - 1) // 2
@@ -46,6 +49,14 @@ def pentagonal(n: int) -> int:
 
 def hexagonal(n: int) -> int:
     return n * (2 * n - 1)
+
+
+def heptagonal(n: int) -> int:
+    return n * (5 * n - 3) // 2
+
+
+def octagonal(n: int) -> int:
+    return n * (3 * n - 2)
 
 
 def sum_of_n_squares(n: int) -> int:
@@ -89,6 +100,20 @@ def is_palindrome(n: int) -> bool:
     return digits == list(reversed(digits))
 
 
+def increasing_seq_cutoff(f: Callable[[int], int], start: int, end: int) -> List[int]:
+    assert start <= end
+    values = []
+    for n in itertools.count(0):
+        value = f(n)
+        if value < start:
+            continue
+        if value >= end:
+            break
+        values.append(value)
+
+    return values
+
+
 # TODO: don't like name :(
 def increasing_seq_cache(f: Callable[[int], int]) -> Callable[[int], bool]:
     max_k: int = 0
@@ -104,6 +129,71 @@ def increasing_seq_cache(f: Callable[[int], int]) -> Callable[[int], bool]:
         return n in cache
 
     return inner
+
+
+def is_perfect_square(n: int) -> bool:
+    x = int(math.sqrt(n))
+    return x * x == n
+
+
+# TODO: class for quadratic cfrac?
+def cfrac_of_sqrt(n: int) -> Tuple[List[int], List[int]]:
+    # First, check that d is not a perfect square.
+    if is_perfect_square(n):
+        # TODO maybe allow terminating cfracs?
+        raise ValueError("perfect square!")
+
+    # We want to track a number of the form (a + b * sqrt(n) / d)
+    # and repeatedly find its continued fraction.
+    sqrt_n = math.sqrt(n)
+
+    a = 0
+    b = 1
+    d = 1
+    history = []
+
+    coeffs = []
+
+    # Quadratics should repeat eventually, so this terminates
+    while (a, b, d) not in history:
+        history.append((a, b, d))
+
+        # Get the integer part
+        # (a+bX)/d = _ + (a'+bX)/d
+        int_part = int((a + b * sqrt_n) / d)
+        a -= int_part * d
+        coeffs.append(int_part)
+
+        # Now flip that fraction over, and rationalize the denominator
+        # d/(a+bX) = d(-a+bX)/(b^2 n - a^2)
+        # This will never be zero in the denominator, because that would
+        # mean -a+bX is zero, i.e., X = a/b, and we know X is not a square.
+        (a, b, d) = (-d * a, d * b, b * b * n - a * a)
+
+        # Check for common denominators
+        g = math.gcd(a, b, d)
+        (a, b, d) = (a // g, b // g, d // g)
+
+    # Where did we see this number before? That's the first coefficent that
+    # we repeat
+    idx = history.index((a, b, d))
+    return (coeffs[:idx], coeffs[idx:])
+
+
+def cfrac_tup_to_iter(cfrac: Tuple[List[int], List[int]]) -> Iterable[int]:
+    head, tail = cfrac
+    return itertools.chain(head, itertools.cycle(tail))
+
+
+def nth_convergent(coeffs: Iterable[int], depth: int) -> Fraction:
+    # Get the right number of coefficients
+    coeffs = list(itertools.islice(coeffs, 0, depth))
+
+    value = Fraction(coeffs[-1])
+    for c in reversed(coeffs[:-1]):
+        value = c + 1 / value
+
+    return value
 
 
 # TODO: there's gotta be something in python that does this

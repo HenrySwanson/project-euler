@@ -166,6 +166,8 @@ def status() -> None:
     problems_with_files = set()
     for file in os.listdir("problems"):
         try:
+            # pyre-fixme[16]: I think my typestubs for the stdlib are
+            # out of date
             problem_number = int(file.removesuffix(".py"))
             problems_with_files.add(problem_number)
         except ValueError:
@@ -194,7 +196,6 @@ def status() -> None:
         intervals.append((start, numbers[-1]))
 
         return intervals
-        
 
     def print_with_ranges(
         numbers: Iterable[int], infinite_tail: Optional[int] = None
@@ -210,13 +211,15 @@ def status() -> None:
                 intervals.pop()
 
         # Stringify things
-        output = [f"{start}-{end}" if start != end else f"{start}" for (start, end) in intervals]
+        output = [
+            f"{start}-{end}" if start != end else f"{start}"
+            for (start, end) in intervals
+        ]
 
         if infinite_tail is not None:
             output.append(f"{infinite_tail}-inf")
 
         print(", ".join(output))
-  
 
     print("Problems completed:")
     print_with_ranges(problems_with_files & problems_saved)
