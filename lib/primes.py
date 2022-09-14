@@ -28,6 +28,10 @@ def iter_primes(cutoff: Optional[int] = None) -> Iterator[int]:
         yield p
 
 
+def iter_primes_rev(start: int) -> Iterator[int]:
+    yield from _PRIME_STATE.iter_primes_rev(start)
+
+
 def init_primes_up_to(cutoff: int) -> None:
     _PRIME_STATE.init_sieve_of_eratosthenes(cutoff)
 
@@ -66,6 +70,7 @@ def sum_divisors(n: int) -> int:
     return math.prod(
         (f.prime ** (f.multiplicity + 1) - 1) // (f.prime - 1) for f in factor(n)
     )
+
 
 def totient(n: int) -> int:
     # n * prod (1 - 1/p)

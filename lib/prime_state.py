@@ -1,4 +1,5 @@
-from bisect import bisect_left
+from audioop import reverse
+from bisect import bisect_left, bisect_right
 import dataclasses
 from typing import Iterator, List
 
@@ -42,6 +43,16 @@ class PrimeCache:
             yield p
 
         yield from self._iter_primes_from_end()
+
+    def iter_primes_rev(self, start: int) -> Iterator[int]:
+        self.init_sieve_of_eratosthenes(start + 1)
+
+        # idx should point right after `start`, if present
+        idx = bisect_right(self.primes, start)
+
+        for p in reversed(self.primes[:idx]):
+            if p <= start:
+                yield p
 
     def _iter_primes_from_end(self) -> Iterator[int]:
         # TODO: is there any chicanery that can occur if we have two of these iterators

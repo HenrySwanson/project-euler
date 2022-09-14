@@ -166,8 +166,6 @@ def status() -> None:
     problems_with_files = set()
     for file in os.listdir("problems"):
         try:
-            # pyre-fixme[16]: I think my typestubs for the stdlib are
-            # out of date
             problem_number = int(file.removesuffix(".py"))
             problems_with_files.add(problem_number)
         except ValueError:

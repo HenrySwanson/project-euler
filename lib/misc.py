@@ -77,7 +77,6 @@ def binomial(n: int, k: int) -> int:
 
 
 def lcm(a: int, b: int) -> int:
-    # pyre-fixme[16]: Why does pyre think this doesn't exist? Wrong stdlib version?
     return math.lcm(a, b)
 
 

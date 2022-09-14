@@ -1,8 +1,9 @@
 {
+  "python_version": "3.9.0",
   "site_package_search_strategy": "pep561",
   "source_directories": [
     "."
   ],
   "strict": true,
-  "typeshed": "/home/henry/.local/lib/pyre_check/typeshed"
+  "typeshed": "/usr/local/lib/pyre_check/typeshed"
 }

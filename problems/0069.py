@@ -24,6 +24,7 @@ from lib.primes import init_primes_up_to, iter_primes, totient
 
 N = 1_000_000
 
+
 def solve_problem() -> int:
     # Okay first I brute forced this, but then I realized it's possible
     # to do it manually.
