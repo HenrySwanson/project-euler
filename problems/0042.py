@@ -7,7 +7,7 @@ Using <a>words.txt</a> (right click and 'Save Link/Target As...'), a 16K text fi
 
 
 import itertools
-from lib.misc import triangle
+from lib.sequence import triangle
 
 
 def solve_problem() -> int:

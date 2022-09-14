@@ -54,6 +54,9 @@ def solve_problem() -> int:
             if best is None or ratio < best[1]:
                 best = (n, ratio)
 
+    # Assert we've found _a_ solution
+    assert best is not None
+
     # Well what about 3 primes?
     # The best we can do is p ~ cbrt(N); just assert that this is too large
     # already.
@@ -61,7 +64,6 @@ def solve_problem() -> int:
     min_possible_ratio = (p / (p_cbrt - 1)) ** 3
     assert best[1] < min_possible_ratio
 
-    assert best is not None
     return best[0]
 
 

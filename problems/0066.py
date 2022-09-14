@@ -23,7 +23,9 @@ Find the value of D ≤ 1000 in minimal solutions of x for which the largest val
 
 import itertools
 from typing import Tuple
-from lib.misc import cfrac_of_sqrt, cfrac_tup_to_iter, is_perfect_square, nth_convergent
+from lib.cfrac import QuadraticCFrac, nth_convergent
+
+from lib.misc import is_perfect_square
 
 
 def solve_problem() -> int:
@@ -40,12 +42,12 @@ def solve_problem() -> int:
 
 
 def get_minimal_soln(d: int) -> Tuple[int, int]:
-    cfrac = cfrac_of_sqrt(d)
+    cfrac = QuadraticCFrac.sqrt(d)
 
     # Get successive convergents. First time we get something that gives a solution
     # to the equation, we stop.
     for i in itertools.count(1):
-        conv = nth_convergent(cfrac_tup_to_iter(cfrac), i)
+        conv = nth_convergent(cfrac.coeffs(), i)
         num = conv.numerator
         den = conv.denominator
         if num * num - d * den * den == 1:

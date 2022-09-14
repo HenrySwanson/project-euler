@@ -10,7 +10,7 @@ Find the next triangle number that is also pentagonal and hexagonal.
 
 
 import itertools
-from lib.misc import hexagonal, increasing_seq_cache, pentagonal, triangle
+from lib.sequence import hexagonal, increasing_seq_cache, pentagonal, triangle
 
 
 def solve_problem() -> int:

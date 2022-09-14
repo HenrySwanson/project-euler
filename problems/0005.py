@@ -4,7 +4,7 @@
 What is the smallest positive number that is evenly divisible by all of the numbers from 1 to 20?
 """
 
-from lib.misc import lcm
+import math
 
 
 def solve_problem() -> int:
@@ -13,5 +13,5 @@ def solve_problem() -> int:
     # Iteratively compute LCMs
     answer = 1
     for k in range(1, 21):
-        answer = lcm(answer, k)
+        answer = math.lcm(answer, k)
     return answer

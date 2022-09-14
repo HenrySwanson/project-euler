@@ -8,7 +8,7 @@ Find the pair of pentagonal numbers, P_j and P_k, for which their sum and differ
 
 import itertools
 
-from lib.misc import increasing_seq_cache, pentagonal
+from lib.sequence import increasing_seq_cache, pentagonal
 
 
 def solve_problem() -> int:

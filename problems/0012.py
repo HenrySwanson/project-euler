@@ -20,7 +20,7 @@ What is the value of the first triangle number to have over five hundred divisor
 
 import itertools
 
-from lib.misc import triangle
+from lib.sequence import triangle
 from lib.primes import num_divisors
 
 

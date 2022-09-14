@@ -19,7 +19,7 @@ Find the sum of the only ordered set of six cyclic 4-digit numbers for which eac
 
 
 from typing import Iterator, List
-from lib.misc import (
+from lib.sequence import (
     heptagonal,
     hexagonal,
     increasing_seq_cutoff,

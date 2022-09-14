@@ -63,17 +63,14 @@ How many continued fractions for N <= 10000 have an odd period?
 """
 
 
-from lib.misc import cfrac_of_sqrt, is_perfect_square
+from lib.cfrac import QuadraticCFrac
 
 
 def solve_problem() -> int:
     total = 0
     for n in range(1, 10001):
-        if is_perfect_square(n):
-            continue
-
-        _, repeating = cfrac_of_sqrt(n)
-        if len(repeating) % 2 == 1:
+        period = QuadraticCFrac.sqrt(n).period()
+        if period is not None and period % 2 == 1:
             total += 1
 
     return total

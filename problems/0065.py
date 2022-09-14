@@ -39,8 +39,9 @@ Find the sum of digits in the numerator of the 100^th convergent of the continue
 from fractions import Fraction
 import itertools
 from typing import Iterator
+from lib.cfrac import nth_convergent
 
-from lib.misc import nth_convergent, to_digits
+from lib.misc import to_digits
 
 
 N = 100

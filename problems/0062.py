@@ -11,7 +11,9 @@ are cube.
 
 from collections import defaultdict
 import itertools
-from lib.misc import from_digits, increasing_seq_cache, increasing_seq_cutoff, to_digits
+from lib.misc import from_digits, to_digits
+
+from lib.sequence import increasing_seq_cache, increasing_seq_cutoff
 
 N = 5
 
