@@ -11,5 +11,16 @@ How many elements would be contained in the set of reduced proper fractions for 
 """
 
 
+from lib.primes import init_primes_up_to, totient
+
+N = 1_000_000
+
+
 def solve_problem() -> int:
-    ...
+    # There is one fraction when n = 2, and beyond that, we add phi(n) fractions for each
+    # increment of n.
+    # Since phi(2) = 1, this can just be written as a sum of phi(n).
+    init_primes_up_to(N)
+
+    # TODO: this is quite slow...
+    return sum(totient(n) for n in range(2, N + 1))
