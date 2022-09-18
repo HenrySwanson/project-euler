@@ -14,7 +14,7 @@ the ratio n/φ(n) produces a minimum.
 
 import math
 from lib.misc import to_digits
-from lib.primes import init_primes_up_to, iter_primes, iter_primes_rev, totient
+from lib.prime_state import PrimeCache
 
 
 N = 10_000_000
@@ -30,16 +30,17 @@ def solve_problem() -> int:
 
     # So we'll start with 2 primes. Start at sqrt(N) * sqrt(N) and work our way
     # down to the smaller primes.
+    pc = PrimeCache()
 
     best = None  # n, n / phi(n)
-    for p in iter_primes_rev(int(math.sqrt(N))):
+    for p in pc.iter_primes_rev(int(math.sqrt(N))):
 
         # quick check: is it even possible to get a better ratio here?
         min_possible_ratio = p / (p - 1)
         if best is not None and min_possible_ratio > best[1]:
             break
 
-        for q in iter_primes_rev(N // p):
+        for q in pc.iter_primes_rev(N // p):
             n = p * q
             phi_n = (p - 1) * (q - 1) if p != q else p * (p - 1)
             ratio = n / phi_n

@@ -15,25 +15,27 @@ Find the product of the coefficients, a and b, for the quadratic expression that
 """
 
 import itertools
+from lib.prime_state import PrimeCache
 
-from lib.primes import is_prime, iter_primes
 
 N = 1000
 
 
 def solve_problem() -> int:
+    pc = PrimeCache()
+
     best = (0, 0)
     best_score = 0
 
     # For p(0) to be prime, b must be prime. Also, since we're considering only positive primes,
     # b must be positive.
     for b in range(N + 1):
-        if not is_prime(b):
+        if not pc.is_prime(b):
             continue
 
         # Also, because p(1) needs to be a positive prime, 1 + a + b needs to be a positive prime
         # too.
-        for p in iter_primes():
+        for p in pc.iter_primes():
             a = p - b - 1
             # a will increase from 1-b to infinity, so cut it off to the right range
             if a <= -N:
@@ -41,7 +43,7 @@ def solve_problem() -> int:
             if a >= N:
                 break
 
-            score = test_quadratic(a, b)
+            score = test_quadratic(pc, a, b)
             if score > best_score:
                 best = (a, b)
                 best_score = score
@@ -49,9 +51,9 @@ def solve_problem() -> int:
     return best[0] * best[1]
 
 
-def test_quadratic(a: int, b: int) -> int:
+def test_quadratic(pc: PrimeCache, a: int, b: int) -> int:
     for n in itertools.count():
-        if not is_prime(n * n + a * n + b):
+        if not pc.is_prime(n * n + a * n + b):
             return n
 
     raise AssertionError()

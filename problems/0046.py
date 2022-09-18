@@ -12,13 +12,14 @@ What is the smallest odd composite that cannot be written as the sum of a prime 
 
 
 import itertools
-
-from lib.primes import is_prime, iter_primes
+from lib.prime_state import PrimeCache
 
 
 def solve_problem() -> int:
     # Let's do this in a zig-zaggy way. Generate all combinations of the first
     # k primes and the first k squares.
+    pc = PrimeCache()
+
     frontier = 0  # The minimum possible number we can now generate
     k = 0
 
@@ -26,13 +27,13 @@ def solve_problem() -> int:
     composites = set()
 
     for n in itertools.count(3, step=2):
-        if is_prime(n):
+        if pc.is_prime(n):
             continue
 
         while frontier < n:
             # Expand our horizons:
             k += 1
-            primes = list(itertools.islice(iter_primes(), 0, k))
+            primes = list(itertools.islice(pc.iter_primes(), 0, k))
             p_max = primes[-1]
             sq_max = k * k  # 1-indexed
             for p in primes:

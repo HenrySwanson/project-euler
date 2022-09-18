@@ -8,6 +8,7 @@ As 12 is the smallest abundant number, 1 + 2 + 3 + 4 + 6 = 16, the smallest numb
 Find the sum of all the positive integers which cannot be written as the sum of two abundant numbers.
 """
 
+from lib.prime_state import PrimeCache
 from lib.primes import sum_divisors
 
 
@@ -15,8 +16,10 @@ LIMIT = 28123
 
 
 def solve_problem() -> int:
+    pc = PrimeCache()
+
     # Pre-compute abundant numbers
-    abundant = set(n for n in range(1, LIMIT) if sum_divisors(n) > 2 * n)
+    abundant = set(n for n in range(1, LIMIT) if sum_divisors(pc.factor(n)) > 2 * n)
 
     # Check each number
     return sum(

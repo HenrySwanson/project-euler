@@ -8,9 +8,9 @@ NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
 """
 
 
-from typing import Iterator, List
+from typing import Iterator
 from lib.misc import from_digits, to_digits
-from lib.primes import is_prime
+from lib.prime_state import PrimeCache
 
 
 def solve_problem() -> int:
@@ -20,28 +20,29 @@ def solve_problem() -> int:
     # of left- (or right-) truncatable primes...
     # Right-truncatable seems more restricted because it means our digits are restricted
     # i.e, after the first digit we can only ever use 1, 3, 7, 9
+    pc = PrimeCache()
 
     bitruncatable = [
         p
         for d in range(10)
-        for p in gen_right_truncatable_primes(d)
-        if is_left_truncatable(p)
+        for p in gen_right_truncatable_primes(pc, d)
+        if is_left_truncatable(pc, p)
     ]
 
     return sum(bitruncatable) - 2 - 3 - 5 - 7
 
 
-def gen_right_truncatable_primes(n: int) -> Iterator[int]:
-    if is_prime(n):
+def gen_right_truncatable_primes(pc: PrimeCache, n: int) -> Iterator[int]:
+    if pc.is_prime(n):
         yield n
     else:
         return
 
     # Try extending by other digits
     for d in [1, 3, 7, 9]:
-        yield from gen_right_truncatable_primes(10 * n + d)
+        yield from gen_right_truncatable_primes(pc, 10 * n + d)
 
 
-def is_left_truncatable(n: int) -> bool:
+def is_left_truncatable(pc: PrimeCache, n: int) -> bool:
     digits = to_digits(n)
-    return all(is_prime(from_digits(digits[i:])) for i in range(len(digits)))
+    return all(pc.is_prime(from_digits(digits[i:])) for i in range(len(digits)))

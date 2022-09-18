@@ -16,21 +16,23 @@ from collections import defaultdict
 from typing import Iterator, Optional
 
 from lib.misc import powerset, to_digits
-from lib.primes import iter_primes
+from lib.prime_state import PrimeCache
 
 N = 8
 
 
 def solve_problem() -> int:
+    pc = PrimeCache()
+
     for n in itertools.count(1):
-        p = solve_problem_n(n)
+        p = solve_problem_n(pc, n)
         if p is not None:
             return p
 
     raise AssertionError()
 
 
-def solve_problem_n(n: int) -> Optional[int]:
+def solve_problem_n(pc: PrimeCache, n: int) -> Optional[int]:
     # Group all the primes by their digit patterns
     # For example, 14411 would fall under X44XX and 1XX11
     # But also! 1X411, 14X11, X4411, X44X1, X441X, etc
@@ -38,7 +40,7 @@ def solve_problem_n(n: int) -> Optional[int]:
 
     lower = 10**n
     upper = lower * 10
-    for p in iter_primes(upper):
+    for p in pc.iter_primes(upper):
         if p < lower:
             continue
 

@@ -7,15 +7,16 @@ Which prime, below one-million, can be written as the sum of the most consecutiv
 """
 
 
-import itertools
-from lib.primes import init_primes_up_to, is_prime, iter_primes
+from lib.prime_state import PrimeCache
 
 N = 1_000_000
 
 
 def solve_problem() -> int:
+    pc = PrimeCache()
+
     # First, generate all primes up to N, because we don't need more
-    primes = list(iter_primes(cutoff=N))
+    primes = list(pc.iter_primes(cutoff=N))
 
     # Then find out what sequence length is reasonable to start with. If
     # the initial segment of length k sums to > N, we don't need to consider runs
@@ -35,7 +36,7 @@ def solve_problem() -> int:
             if s >= N:
                 break
 
-            if is_prime(s):
+            if pc.is_prime(s):
                 return s
 
     raise AssertionError()

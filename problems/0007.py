@@ -5,10 +5,11 @@ What is the 10 001st prime number?
 """
 
 from lib.misc import nth
-from lib.primes import iter_primes
+from lib.prime_state import PrimeCache
 
 N = 10_001
 
 
 def solve_problem() -> int:
-    return nth(iter_primes(), N - 1)
+    pc = PrimeCache()
+    return nth(pc.iter_primes(), N - 1)

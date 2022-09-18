@@ -20,7 +20,7 @@ Find the value of n ≤ 1,000,000 for which n/φ(n) is a maximum.
 """
 
 
-from lib.primes import init_primes_up_to, iter_primes, totient
+from lib.prime_state import PrimeCache
 
 N = 1_000_000
 
@@ -32,8 +32,9 @@ def solve_problem() -> int:
     # Since φ(n) = n prod_p (1-1/p), n/φ(n) = prod_p p/(p-1)
     # So we want to shove as many primes in there as possible (exponent doesn't matter!)
 
+    pc = PrimeCache()
     product = 1
-    for p in iter_primes():
+    for p in pc.iter_primes():
         if product * p > N:
             break
         product *= p

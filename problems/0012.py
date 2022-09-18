@@ -19,15 +19,17 @@ What is the value of the first triangle number to have over five hundred divisor
 """
 
 import itertools
+from lib.prime_state import PrimeCache
 
 from lib.sequence import triangle
 from lib.primes import num_divisors
 
 
 def solve_problem() -> int:
+    pc = PrimeCache()
     for n in itertools.count(1):
         t = triangle(n)
-        if num_divisors(t) > 500:
+        if num_divisors(pc.factor(t)) > 500:
             return t
 
     raise AssertionError()

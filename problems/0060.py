@@ -6,15 +6,12 @@ primes, 792, represents the lowest sum for a set of four primes with this proper
 Find the lowest sum for a set of five primes for which any two primes concatenate to produce another prime.
 """
 
-from calendar import c
 from collections import defaultdict
 import itertools
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from black import Iterator
-from lib.misc import from_digits, num_digits, to_digits
-
-from lib.primes import init_primes_up_to, is_prime, iter_primes
+from lib.misc import num_digits
+from lib.prime_state import PrimeCache
 
 
 N = 5
@@ -23,11 +20,12 @@ N = 5
 def solve_problem() -> int:
     # I think the hard part here is going to be the "lowest sum" criterion...
     # How do you rule out 3, 7, and three big primes?
+    pc = PrimeCache()
 
     # Iterate with higher and higher bounds
     soln: Optional[Tuple[int]] = None
     for k in itertools.count(1):
-        soln = solve_bounded_problem(10**k)
+        soln = solve_bounded_problem(pc, 10**k)
         if soln is not None:
             break
 
@@ -35,13 +33,13 @@ def solve_problem() -> int:
     return sum(soln)
 
 
-def solve_bounded_problem(bound: int) -> Optional[Tuple[int, ...]]:
-    init_primes_up_to(bound)
+def solve_bounded_problem(pc: PrimeCache, bound: int) -> Optional[Tuple[int, ...]]:
+    pc.init_sieve_of_eratosthenes(bound)
 
     compatible: Dict[int, List[int]] = defaultdict(list)
-    for p in iter_primes(cutoff=bound):
-        for q in iter_primes(cutoff=p):
-            if is_compatible(p, q):
+    for p in pc.iter_primes(cutoff=bound):
+        for q in pc.iter_primes(cutoff=p):
+            if is_compatible(pc, p, q):
                 compatible[q].append(p)  # q < p
 
     # We now want to find a clique of size N in this graph.
@@ -66,7 +64,7 @@ def solve_bounded_problem(bound: int) -> Optional[Tuple[int, ...]]:
                 # clique + p is a clique of size n
                 # consider adding numbers from compatible[p]
                 for q in compatible.get(p, []):
-                    if all(is_compatible(r, q) for r in clique):
+                    if all(is_compatible(pc, r, q) for r in clique):
                         cliques_n1[clique + (p,)].append(q)
 
         # The tuples are length n at this point, so if there's < N-n possible elements
@@ -83,10 +81,10 @@ def solve_bounded_problem(bound: int) -> Optional[Tuple[int, ...]]:
     return max(tuples, key=sum)
 
 
-def concat_is_prime(p: int, q: int) -> bool:
+def concat_is_prime(pc: PrimeCache, p: int, q: int) -> bool:
     concat = p * 10 ** num_digits(q) + q
-    return is_prime(concat)
+    return pc.is_prime(concat)
 
 
-def is_compatible(p: int, q: int) -> bool:
-    return concat_is_prime(p, q) and concat_is_prime(q, p)
+def is_compatible(pc: PrimeCache, p: int, q: int) -> bool:
+    return concat_is_prime(pc, p, q) and concat_is_prime(pc, q, p)

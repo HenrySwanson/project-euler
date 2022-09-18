@@ -7,6 +7,7 @@ For example, the proper divisors of 220 are 1, 2, 4, 5, 10, 11, 20, 22, 44, 55 a
 Evaluate the sum of all the amicable numbers under 10000.
 """
 
+from lib.prime_state import PrimeCache
 from lib.primes import sum_divisors
 
 
@@ -15,7 +16,8 @@ def solve_problem() -> int:
 
 
 def is_amicable(x: int) -> bool:
-    y = sum_divisors(x) - x
+    pc = PrimeCache()
+    y = sum_divisors(pc.factor(x)) - x
     if x == y or y == 0:
         return False
-    return x == sum_divisors(y) - y
+    return x == sum_divisors(pc.factor(y)) - y

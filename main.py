@@ -246,13 +246,9 @@ def time(number: int) -> None:
     """
     Run the indicated problem several times and give some stats on the timing.
     """
-    # TODO: how to clear cached data more generally?
-    from lib.primes import _PRIME_STATE
 
     run_times = []
     for i in range(10):
-        # Clear the cache
-        _PRIME_STATE.clear()
         # Run the problem
         start = perf_counter()
         run_problem(number)

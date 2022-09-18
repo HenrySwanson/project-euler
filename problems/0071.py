@@ -21,7 +21,7 @@ def solve_problem() -> int:
     # Each term is the mediant of its neighbors, so just keep taking mediants until we see a denominator more than N
     a, b, c, d = 2, 5, 3, 7
     prev_a = None
-    
+
     while b <= N:
         prev_a = a  # save for later
 

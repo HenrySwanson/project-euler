@@ -19,20 +19,21 @@ both diagonals first falls below 10%?
 
 
 import itertools
-
-from lib.primes import is_prime
+from lib.prime_state import PrimeCache
 
 
 def solve_problem() -> int:
     # The same square is described in #28, and the numbers on the diagonals are
     #   X, (X - 2k), (X - 4k), (X - 6k)    where X = (2k+1)^2
 
+    pc = PrimeCache()
+
     count = 1
     primes = 0
     for k in itertools.count(1):
         X = (2 * k + 1) * (2 * k + 1)
         count += 4
-        primes += sum(1 for n in [X, X - 2 * k, X - 4 * k, X - 6 * k] if is_prime(n))
+        primes += sum(1 for n in [X, X - 2 * k, X - 4 * k, X - 6 * k] if pc.is_prime(n))
 
         if primes * 10 < count:
             return 2 * k + 1
