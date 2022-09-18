@@ -11,17 +11,16 @@ Find the first four consecutive integers to have four distinct prime factors eac
 
 
 import itertools
-from lib.prime_state import PrimeCache
+from lib.sieve import PrimeSieve
 from lib.primes import num_distinct_prime_factors
 
 
 def solve_problem() -> int:
-    pc = PrimeCache()
-    pc.init_sieve_of_eratosthenes(10000)
+    sieve = PrimeSieve(200_000)
 
     count = 0
     for n in itertools.count(2 * 3 * 5 * 7):
-        if num_distinct_prime_factors(pc.factor(n)) == 4:
+        if num_distinct_prime_factors(sieve.factor(n)) == 4:
             count += 1
         else:
             count = 0

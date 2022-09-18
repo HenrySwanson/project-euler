@@ -11,8 +11,8 @@ How many elements would be contained in the set of reduced proper fractions for 
 """
 
 
-from lib.prime_state import PrimeCache
 from lib.primes import totient
+from lib.sieve import PrimeSieve
 
 N = 1_000_000
 
@@ -21,8 +21,6 @@ def solve_problem() -> int:
     # There is one fraction when n = 2, and beyond that, we add phi(n) fractions for each
     # increment of n.
     # Since phi(2) = 1, this can just be written as a sum of phi(n).
-    pc = PrimeCache()
-    pc.init_sieve_of_eratosthenes(N)
+    sieve = PrimeSieve(N)
 
-    # TODO: this is quite slow...
-    return sum(totient(n, pc.factor(n)) for n in range(2, N + 1))
+    return sum(totient(n, sieve.factor(n)) for n in range(2, N + 1))
