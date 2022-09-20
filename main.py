@@ -102,7 +102,7 @@ def create(problems: Tuple[str]) -> None:
     if include_all:
         raise click.Abort('"all" not valid argument for `create` command')
 
-    for n in numbers:
+    for n in sorted(numbers):
         try:
             create_single_file(n)
         except Exception as e:
@@ -141,7 +141,7 @@ def run(problems: Tuple[str]) -> None:
     if include_all:
         numbers.update(list_problem_files())
 
-    for n in numbers:
+    for n in sorted(numbers):
         run_single_problem(n)
         click.echo()
 
@@ -193,7 +193,7 @@ def check(problems: Tuple[str]) -> None:
         numbers.update(list_problem_files(), saved_answers.keys())
 
     statuses = defaultdict(int)
-    for n in numbers:
+    for n in sorted(numbers):
         status = check_single_problem(n, saved_answers.get(n))
         statuses[status] += 1
 
@@ -335,7 +335,7 @@ def show(problems: Tuple[str]) -> None:
     if include_all:
         numbers.update(answers.keys())
 
-    for n in numbers:
+    for n in sorted(numbers):
         answer = answers[n]
         click.echo(f"Problem #{n:04}: {answer}")
 

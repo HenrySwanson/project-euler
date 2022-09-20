@@ -95,10 +95,10 @@ def parse_numeric_list(
 
 
 def parse_numeric_grid(
-    input: str, start_line: Optional[int], end_line: Optional[int]
+    input: str, start_line: Optional[int], end_line: Optional[int], sep: str = " "
 ) -> Tuple[Tuple[int, ...], ...]:
     return tuple(
-        tuple(int(x) for x in line.split(" "))
+        tuple(int(x) for x in line.split(sep))
         for line in _ext_slice(input.splitlines(), start_line, end_line)
     )
 

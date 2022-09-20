@@ -22,6 +22,7 @@ How many chains, with a starting number below one million, contain exactly sixty
 
 
 from math import factorial
+from typing import Dict
 from lib.misc import to_digits
 
 N = 1_000_000
@@ -39,9 +40,9 @@ def solve_problem() -> int:
         for n in loop:
             loop_sizes[n] = len(loop)
 
-    cache = dict(loop_sizes)
+    cache: Dict[int, int] = dict(loop_sizes)
 
-    def solve(n: int) -> None:
+    def solve(n: int) -> int:
         if n in cache:
             return cache[n]
         # We were given the only possible _non-singleton_ loops, so we have to watch out for
