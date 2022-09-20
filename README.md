@@ -16,7 +16,11 @@ This repository has type annotations; either [mypy](http://mypy-lang.org/) or [P
 
 # Commands
 
-To use this tool, run `main.py` with one of the following commands. (You can always pass `--help` for more details on a particular command.)
+To use this tool, run `main.py` with one of the following commands. (
+
+Most of these commands also take arguments of the form `a-b`, indicating problems _a_ to _b_, inclusive, and the special value `all`, which has slightly different meanings for different commands.
+
+Lastly, you can always pass `--help` for more details on a particular command.
 
 - `create <n>`: Create a new file `problems/<n>.py` for problem #n.
   - It fetches the problem description from the website and (poorly) formats it as a doc comment.
@@ -28,5 +32,5 @@ To use this tool, run `main.py` with one of the following commands. (You can alw
 - `time <n>`: Runs the problem code several times and reports the average time taken.
 - `overview`: Shows an overview of which problems have been completed or not.
 - `answers`: Contains subcommands for manipulating the answer save file.
-  - `show`: Shows the entire contents of the answer file.
+  - `show <n>`: Shows the saved entries from the answer file.
   - `delete <n>`: Deletes the specific entry from the answer file.

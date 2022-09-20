@@ -1,32 +1,34 @@
 #!/usr/bin/env python
 
+from collections import defaultdict
+import enum
 import os
 from importlib import import_module
+from sre_constants import FAILURE, SUCCESS
 from time import perf_counter
-from typing import Dict, Iterable, Optional, List, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import click
 import requests
 from cli.answer import parse_answer_file, save_answer_file
 
 from cli.format import htmlToDocstring
-from cli.intervals import format_as_intervals
+from cli.intervals import format_as_intervals, parse_interval_string
 
 TEMPLATE_FILE = "problem.py.template"
 ANSWER_FILE = "answers.bin"
 
 # ==== TODO LIST ====
-# - maybe make scramble and unscramble depend on an un-checked-in file
-#   that i can conjure from memory?
-#   - nah, too much effort
 # - tests
-# - if i forget to save, how can i run a command to check that?
-# - `next` command?
-# - an interactive mode would be cool!
-#  - open 25, create, run, run, ..., run, save
-#  - would have to force a reload of all py files though...
-# - run and check are pretty similar, it'd be nice to have them unified
-#   - both run the solver, and the only difference is whether there's an answer already saved
+# - can i do some python deepmagic to detect the '...' in the problem file?
+#   might help with distinguishing "downloaded" from "started"
+
+
+class CheckStatus(enum.Enum):
+    SUCCESS = enum.auto()
+    FAILURE = enum.auto()
+    UNSOLVED = enum.auto()
+    NEEDS_ATTENTION = enum.auto()
 
 
 def filename(n: int) -> str:
@@ -39,12 +41,20 @@ def run_problem(n: int) -> int:
 
 
 def get_problem_description(n: int) -> str:
+    """
+    Fetch the project description from the Project Euler website, and apply some light formatting.
+    """
+    
     # TODO error handling (just capture from outside this fn)
     resp = requests.get(f"https://projecteuler.net/minimal={n}")
     return htmlToDocstring(resp.text)
 
 
 def list_problem_files() -> List[int]:
+    """
+    Returns a list of integers for which a solver file exists.
+    """
+
     problems = []
     for file in os.listdir("problems"):
         try:
@@ -53,6 +63,26 @@ def list_problem_files() -> List[int]:
             pass
 
     return problems
+
+
+def parse_interval_input(args: Tuple[str]) -> Tuple[Set[int], bool]:
+    """
+    Returns a set of integers that are explicitly specified by the user, and also
+    a boolean indicating whether "all" was passed.
+    (The caller likely wants to handle that themselves.)
+    """
+
+    problems = set()
+    include_all = False
+
+    for arg in args:
+        if arg == "all":
+            include_all = True
+        else:
+            (start, end) = parse_interval_string(arg)
+            problems.update(range(start, end + 1))
+
+    return problems, include_all
 
 
 # ==== CLI Commands ====
@@ -64,44 +94,70 @@ def cli() -> None:
 
 
 @cli.command()
-@click.argument(
-    "number",
-    type=int,
-)
-def create(number: int) -> None:
-    """Use the template file to create a starting point for the given problem."""
-    dst_path = f"problems/{filename(number)}.py"
+@click.argument("problems", type=str, nargs=-1, required=True)
+def create(problems: Tuple[str]) -> None:
+    """Use the template file to create a starting point for the given problems."""
+
+    numbers, include_all = parse_interval_input(problems)
+    if include_all:
+        raise click.Abort('"all" not valid argument for `create` command')
+
+    for n in numbers:
+        try:
+            create_single_file(n)
+        except Exception as e:
+            click.secho(f"Unable to create file for problem {n}: {e}", fg="red")
+            pass
+
+
+def create_single_file(n: int) -> None:
+    """Creates a solver file for the given problem."""
+
+    dst_path = f"problems/{filename(n)}.py"
 
     if os.path.exists(dst_path):
-        click.confirm(
-            f"File {dst_path} already exists; do you want to overwrite?", abort=True
-        )
+        if not click.confirm(
+            f"File {dst_path} already exists; do you want to overwrite?"
+        ):
+            return
 
     with open(TEMPLATE_FILE, "r") as f:
         template_contents = f.read()
 
-    output = template_contents.format(description=get_problem_description(number))
+    output = template_contents.format(description=get_problem_description(n))
 
     with open(dst_path, "w", encoding="utf-8") as f:
         f.write(output)
 
-    click.echo(f"Created file for problem {number} at {dst_path}")
+    click.echo(f"Created file for problem {n} at {dst_path}")
 
 
 @cli.command()
-@click.argument(
-    "number",
-    type=int,
-)
-def run(number: int) -> None:
+@click.argument("problems", type=str, nargs=-1, required=True)
+def run(problems: Tuple[str]) -> None:
+    """Run the solver for the given problems and print the answer."""
+
+    numbers, include_all = parse_interval_input(problems)
+    if include_all:
+        numbers.update(list_problem_files())
+
+    for n in numbers:
+        run_single_problem(n)
+        click.echo()
+
+
+def run_single_problem(n: int) -> None:
     """
-    Run the solver and print the answer
+    Runs a single problem, showing its output to the user, and prompting the
+    user to save if the answer is not already saved.
     """
-    answer = run_problem(number)
+
+    click.echo(f"Running problem {n:04}...")
+    answer = run_problem(n)
     click.secho(f"Answer: {answer}", bold=True)
 
     answers = parse_answer_file(ANSWER_FILE)
-    old_answer = answers.get(number)
+    old_answer = answers.get(n)
 
     if old_answer is None:
         click.echo("No previously saved answer")
@@ -115,70 +171,91 @@ def run(number: int) -> None:
 
     if old_answer != answer and click.confirm("Would you like to save this answer?"):
         # Actually write the answer and save it
-        answers[number] = answer
+        answers[n] = answer
         save_answer_file(ANSWER_FILE, answers)
         click.echo("Saved!")
 
 
 @cli.command()
-@click.argument(
-    "number",
-    type=int,
-    default=0,  # TODO: gross :(
-)
-def check(number: int) -> None:
+@click.argument("problems", type=str, nargs=-1, required=True)
+def check(problems: Tuple[str]) -> None:
     """
     Solve all problems and check if the answers match those in the cache.
     This is nice for checking the validity of any refactoring I'm doing.
     """
+
+    # Figure out which problems the user specified
+    numbers, include_all = parse_interval_input(problems)
+
     saved_answers: Dict[int, int] = parse_answer_file(ANSWER_FILE)
 
-    problems = (
-        set(list_problem_files()) | saved_answers.keys() if number == 0 else {number}
-    )
+    if include_all:
+        numbers.update(list_problem_files(), saved_answers.keys())
 
-    succeeded = failed = weird = unsolved = 0
-    for n in problems:
-        # Get current and saved answers
-        saved = saved_answers.get(n)
-        try:
-            current = run_problem(n)
-        except ImportError:
-            current = None
+    statuses = defaultdict(int)
+    for n in numbers:
+        status = check_single_problem(n, saved_answers.get(n))
+        statuses[status] += 1
 
-        # Big ol' match statement
-        if saved is None:
-            if current is None:
-                click.echo(f"Problem {n:04} is unsolved")
-                unsolved += 1
-            else:
-                click.secho(
-                    f"Problem {n:04} produces answer {current}, but it is not saved",
-                    fg="yellow",
-                )
-                weird += 1
-        else:
-            if current is None:
-                click.secho(
-                    f"Problem {n:04} has a saved answer {saved}, but no solver",
-                    fg="yellow",
-                )
-                weird += 1
-            elif current == saved:
-                click.secho(f"Problem {n:04} is good!", fg="green")
-                succeeded += 1
-            else:
-                click.secho(
-                    f"Problem {n:04} failed: solver has {current}, save file has {saved}",
-                    fg="red",
-                    bold=True,
-                )
-                failed += 1
+    # Decide what color the summary message should show up as
+    if statuses[CheckStatus.FAILURE] > 0:
+        color = "red"
+    elif statuses[CheckStatus.NEEDS_ATTENTION] > 0:
+        color = "yellow"
+    else:
+        color = "green"
 
     click.secho(
-        f"Ran {len(problems)} problems: {succeeded} succeeded, {failed} failed, {unsolved} unsolved, {weird} need attention",
-        fg="red" if failed > 0 else "yellow" if weird > 0 else "green",
+        "Ran {num_problems} problems: {succeeded} succeeded, {failed} failed, {unsolved} unsolved, {attention} need attention".format(
+            num_problems=len(numbers),
+            succeeded=statuses[CheckStatus.SUCCESS],
+            failed=statuses[CheckStatus.FAILURE],
+            unsolved=statuses[CheckStatus.UNSOLVED],
+            attention=statuses[CheckStatus.NEEDS_ATTENTION],
+        ),
+        fg=color,
     )
+
+
+def check_single_problem(n: int, saved_answer: Optional[int]) -> CheckStatus:
+    """
+    Checks the status of a single problem against the saved answer, and returns
+    a `CheckStatus` enum.
+    """
+
+    try:
+        current_answer = run_problem(n)
+    except ImportError:
+        current_answer = None
+
+    # Big ol' match statement
+    if saved_answer is None:
+        if current_answer is None:
+            click.echo(f"Problem {n:04} is unsolved")
+            return CheckStatus.UNSOLVED
+        else:
+            click.secho(
+                f"Problem {n:04} produces answer {current_answer}, but it is not saved",
+                fg="yellow",
+            )
+            return CheckStatus.NEEDS_ATTENTION
+    else:
+        if current_answer is None:
+            click.secho(
+                f"Problem {n:04} has a saved answer {saved_answer}, but no solver",
+                fg="yellow",
+            )
+            return CheckStatus.NEEDS_ATTENTION
+        elif current_answer == saved_answer:
+            click.secho(f"Problem {n:04} is good!", fg="green")
+            return CheckStatus.SUCCESS
+        else:
+            click.secho(
+                f"Problem {n:04} failed: solver has {current_answer}, save file has {saved_answer}",
+                fg="red",
+                bold=True,
+            )
+            return CheckStatus.FAILURE
 
 
 @cli.command()
@@ -188,6 +265,7 @@ def overview() -> None:
 
     Helpful for checking if I forgot to save an answer.
     """
+
     problems_saved = parse_answer_file(ANSWER_FILE).keys()
     problems_with_files = set(list_problem_files())
 
@@ -213,10 +291,10 @@ def overview() -> None:
 
 @cli.command()
 @click.argument(
-    "number",
+    "problem",
     type=int,
 )
-def time(number: int) -> None:
+def time(problem: int) -> None:
     """
     Run the indicated problem several times and give some stats on the timing.
     """
@@ -225,7 +303,7 @@ def time(number: int) -> None:
     for i in range(10):
         # Run the problem
         start = perf_counter()
-        run_problem(number)
+        run_problem(problem)
         elapsed = perf_counter() - start
         run_times.append(elapsed)
         # Print to reassure the user something's happening
@@ -244,30 +322,39 @@ def answers() -> None:
 
 
 @answers.command()
-def show() -> None:
+@click.argument("problems", type=str, nargs=-1, required=True)
+def show(problems: Tuple[str]) -> None:
     """
-    Show the entire answer list.
+    Show specific answers from the answer list.
     This is nice for checking that I wrote scramble and unscramble correctly.
     """
+
+    numbers, include_all = parse_interval_input(problems)
     answers = parse_answer_file(ANSWER_FILE)
-    for (n, answer) in answers.items():
+
+    if include_all:
+        numbers.update(answers.keys())
+
+    for n in numbers:
+        answer = answers[n]
         click.echo(f"Problem #{n:04}: {answer}")
 
 
 @answers.command()
-@click.argument("number", type=int)
-def delete(number: int) -> None:
+@click.argument("problem", type=int)
+def delete(problem: int) -> None:
     """Delete a specific answer from the save file."""
+
     answers = parse_answer_file(ANSWER_FILE)
-    if number in answers:
+    if problem in answers:
         click.confirm(
-            f"Are you sure you want to delete the saved answer for problem {number}?",
+            f"Are you sure you want to delete the saved answer for problem {problem}?",
             abort=True,
         )
-        del answers[number]
+        del answers[problem]
         save_answer_file(ANSWER_FILE, answers)
     else:
-        click.secho(f"No saved answer for problem {number}", fg="yellow")
+        click.secho(f"No saved answer for problem {problem}", fg="yellow")
 
 
 if __name__ == "__main__":

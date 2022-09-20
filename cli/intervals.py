@@ -62,3 +62,15 @@ def format_as_intervals(
         output.append(f"{infinite_tail}-inf")
 
     return ", ".join(output)
+
+
+def parse_interval_string(s: str) -> Tuple[int, int]:
+    try:
+        x = int(s)
+        return (x, x)
+    except ValueError:
+        pass
+
+    # This ValueError through, we want to throw
+    start, end = s.split("-")
+    return (int(start), int(end))
