@@ -21,5 +21,44 @@ How many chains, with a starting number below one million, contain exactly sixty
 """
 
 
+from math import factorial
+from lib.misc import to_digits
+
+N = 1_000_000
+LIMIT = 60
+
+
 def solve_problem() -> int:
-    ...
+    # We are kindly given the only possible loops, so let's make use of them.
+    loop_sizes = {}
+    for n in [1, 2, 145, 169, 871, 872]:
+        loop = []
+        while n not in loop:
+            loop.append(n)
+            n = next_step(n)
+        for n in loop:
+            loop_sizes[n] = len(loop)
+
+    cache = dict(loop_sizes)
+
+    def solve(n: int) -> None:
+        if n in cache:
+            return cache[n]
+        # We were given the only possible _non-singleton_ loops, so we have to watch out for
+        # the singletons.
+        n2 = next_step(n)
+        if n == n2:
+            value = 1
+        else:
+            value = 1 + solve(n2)
+        cache[n] = value
+        return value
+
+    for n in range(N):
+        solve(n)
+
+    return sum(1 for x in cache.values() if x == LIMIT)
+
+
+def next_step(n: int) -> int:
+    return sum(factorial(d) for d in to_digits(n))

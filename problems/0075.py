@@ -1,5 +1,6 @@
 """
-It turns out that 12 cm is the smallest length of wire that can be bent to form an integer sided right angle triangle in exactly one way, but there are many more examples.
+It turns out that 12 cm is the smallest length of wire that can be bent to form an integer sided right angle
+triangle in exactly one way, but there are many more examples.
 
 12 cm: (3,4,5)
 24 cm: (6,8,10)
@@ -8,13 +9,47 @@ It turns out that 12 cm is the smallest length of wire that can be bent to form 
 40 cm: (8,15,17)
 48 cm: (12,16,20)
 
-In contrast, some lengths of wire, like 20 cm, cannot be bent to form an integer sided right angle triangle, and other lengths allow more than one solution to be found; for example, using 120 cm it is possible to form exactly three different integer sided right angle triangles.
+In contrast, some lengths of wire, like 20 cm, cannot be bent to form an integer sided right angle triangle,
+and other lengths allow more than one solution to be found; for example, using 120 cm it is possible to form
+exactly three different integer sided right angle triangles.
 
 120 cm: (30,40,50), (20,48,52), (24,45,51)
 
-Given that L is the length of the wire, for how many values of L ≤ 1,500,000 can exactly one integer sided right angle triangle be formed?
+Given that L is the length of the wire, for how many values of L ≤ 1,500,000 can exactly one integer sided
+right angle triangle be formed?
 """
+
+from collections import defaultdict
+from math import gcd, sqrt
+
+
+N = 1_500_000
 
 
 def solve_problem() -> int:
-    ...
+    # N is too large to do this naively, so let's be smarter.
+    # All primitive Pythagorean triples can be uniquely parameterized as:
+    #   (m^2 - n^2) / 2, mn, (m^2 + n^2) / 2, with m > n, m and n coprime and odd
+    # Multiplying by k gives all triples (uniquely)
+
+    # The perimeter of such a triangle is then: km^2 + kmn = km(m + n).
+    # I tried to do something with factoring, but it's very tricky. So we'll
+    # just iterate all relevant (k, m, n) pairs.
+
+    counter = defaultdict(int)
+
+    # m is at most sqrt(N), and always odd
+    for m in range(1, int(sqrt(N)) + 1, 2):
+        # n is < m and odd
+        for n in range(1, m, 2):
+            term = m * (m + n)
+            if term > N:
+                break
+
+            if gcd(m, n) != 1:
+                continue
+
+            for perimeter in range(term, N + 1, term):
+                counter[perimeter] += 1
+
+    return sum(1 for size in counter.values() if size == 1)

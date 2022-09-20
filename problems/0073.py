@@ -11,5 +11,25 @@ How many fractions lie between 1/3 and 1/2 in the sorted set of reduced proper f
 """
 
 
+from math import ceil, floor, gcd
+
+N = 12_000
+
+
 def solve_problem() -> int:
-    ...
+    # Find the first number before 1/3
+    # TODO: this works with a/b = 0/1??? why???
+    a, b = 0, 1
+    c, d = 1, 3
+
+    # Now step through the Farey sequence until we hit 1/2
+    # Fencepost: we count including 1/3 but not 1/2
+    total = 0
+    while d != 2:
+        total += 1
+        k = (N + b) // d
+        p = k * c - a
+        q = k * d - b
+        (a, b, c, d) = (c, d, p, q)
+
+    return total - 1
