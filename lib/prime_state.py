@@ -40,6 +40,7 @@ class PrimeCache:
         self.next_to_check = limit | 1
 
     def iter_primes(self, cutoff: Optional[int] = None) -> Iterator[int]:
+        """Iterate over primes up to, but not including, cutoff"""
         if cutoff is not None:
             self.init_sieve_of_eratosthenes(cutoff)
 

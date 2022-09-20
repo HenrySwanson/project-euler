@@ -12,5 +12,12 @@ How many different ways can one hundred be written as a sum of at least two posi
 """
 
 
+from lib.sequence import partition
+
+
+N = 100
+
+
 def solve_problem() -> int:
-    ...
+    # Subtract the singleton partition
+    return partition(N, {}) - 1

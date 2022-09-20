@@ -1,17 +1,15 @@
-from fractions import Fraction
 import itertools
 import math
 from typing import (
-    Callable,
     Iterable,
     Iterator,
     List,
     Optional,
     Sequence,
-    Set,
     Tuple,
     TypeVar,
 )
+
 
 T = TypeVar("T")
 
