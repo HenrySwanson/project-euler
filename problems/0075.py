@@ -22,6 +22,8 @@ right angle triangle be formed?
 from collections import defaultdict
 from math import gcd, sqrt
 
+from lib.pythagorean import iter_primitive_pythagorean_by_perimeter
+
 
 N = 1_500_000
 
@@ -38,18 +40,10 @@ def solve_problem() -> int:
 
     counter = defaultdict(int)
 
-    # m is at most sqrt(N), and always odd
-    for m in range(1, int(sqrt(N)) + 1, 2):
-        # n is < m and odd
-        for n in range(1, m, 2):
-            term = m * (m + n)
-            if term > N:
-                break
+    for (a, b, c) in iter_primitive_pythagorean_by_perimeter(N+1):
+        prim_perimeter = a + b + c
 
-            if gcd(m, n) != 1:
-                continue
-
-            for perimeter in range(term, N + 1, term):
-                counter[perimeter] += 1
+        for perimeter in range(prim_perimeter, N + 1, prim_perimeter):
+            counter[perimeter] += 1
 
     return sum(1 for size in counter.values() if size == 1)
