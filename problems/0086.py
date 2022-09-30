@@ -17,8 +17,10 @@ Find the least value of M such that the number of solutions first exceeds one mi
 """
 
 import itertools
-from math import ceil, gcd, isqrt, sqrt
+from math import gcd
 from typing import Iterator, Tuple
+
+from lib.pythagorean import iter_primitive_pythagorean_by_leg
 
 
 N = 1_000_000
@@ -31,14 +33,14 @@ def solve_problem() -> int:
     # So we want to iterate through Pythagorean triples (a, b, c), and convert them
     # into cuboids.
 
-    limit = 1_000_000
+    limit = 2_000
 
     # kth element contains the number of acceptable cuboids with largest side k
     acceptable_cuboids = [0] * limit
 
     # If the cuboid (A, B, C) gives the Pythagorean triple (a, b, c), then c is larger
     # than a and b, one of which is max(A, B, C).
-    for (a, b, _) in iter_primitive_pythagorean(limit):
+    for (a, b, _) in iter_primitive_pythagorean_by_leg(limit):
         # How many cuboids are there that give the triple (a, b, c)?
         # Either a is split up, or b is. Do we have to worry about double-counting?
         # No! The same cuboid can not come from two different triples, because we
@@ -47,10 +49,6 @@ def solve_problem() -> int:
             if k * a >= limit:
                 break
             acceptable_cuboids[k * a] += count_splits(k * a, k * b)
-        for k in itertools.count(1):
-            if k * b >= limit:
-                break
-            acceptable_cuboids[k * b] += count_splits(k * b, k * a)
 
     # Now find the first point at which the running total is > N
     total = 0
@@ -64,24 +62,6 @@ def solve_problem() -> int:
             return i
 
     raise ValueError(f"Did not go high enough! You need to increase limit")
-
-
-# Iterate all pythagorean triples with hypotenuse at most limit
-def iter_primitive_pythagorean(limit: int) -> Iterator[Tuple[int, int, int]]:
-    # c is at least m^2/2 (strictly), so to generate all c < limit, we want
-    # to iterate m up to sqrt(2 * limit)
-    m_limit = ceil(sqrt(2 * limit))
-    for m in range(1, m_limit + 1, 2):
-        for n in range(1, m, 2):
-            if gcd(m, n) != 1:
-                continue
-
-            a = (m * m - n * n) // 2
-            b = m * n
-            c = (m * m + n * n) // 2
-
-            if c < limit:
-                yield (a, b, c)
 
 
 def count_splits(long: int, split: int) -> int:
