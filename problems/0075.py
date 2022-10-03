@@ -40,7 +40,7 @@ def solve_problem() -> int:
 
     counter = defaultdict(int)
 
-    for (a, b, c) in iter_primitive_pythagorean_by_perimeter(N+1):
+    for (a, b, c) in iter_primitive_pythagorean_by_perimeter(N + 1):
         prim_perimeter = a + b + c
 
         for perimeter in range(prim_perimeter, N + 1, prim_perimeter):
