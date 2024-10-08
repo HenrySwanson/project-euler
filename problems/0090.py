@@ -21,102 +21,37 @@ But because we are allowing 6 and 9 to be reversed, the two distinct sets in the
 How many distinct arrangements of the two cubes allow for all of the square numbers to be displayed?
 """
 
+from itertools import combinations
 from typing import List
 
-# Put 7 last because it's the only digit we don't use,
-# and put 6 and 9 near the end because they're strange.
-DIGITS = [0, 1, 2, 3, 4, 5, 8, 6, 9, 7]
+
+def rotate_digit(n: int) -> int:
+    if n == 9:
+        return 6
+    return n
+
 
 SQUARES = [x * x for x in range(1, 10)]
-SQUARE_DIGITS = [(x // 10, x % 10) for x in SQUARES]
-SQUARE_MAP = {
-    x: [
-        y
-        for y in range(10)
-        if x >= y and ((x,y) in SQUARES or (y, x) in SQUARES)
-    ]
-    for x in range(10)
-}
+SQUARE_DIGITS = [(rotate_digit(x // 10), rotate_digit(x % 10)) for x in SQUARES]
 
 
 def solve_problem() -> int:
-    return foo([], [], 0)
+    # only 10 choose 6 = 210 combinations, pretty small!
+    cubes = list(combinations([0, 1, 2, 3, 4, 5, 6, 7, 8, 6], 6))
+    return sum(
+        1 for idx, c1 in enumerate(cubes) for c2 in cubes[idx:] if is_correct(c1, c2)
+    )
 
-def foo(cube_a: List[int], cube_b: List[int], idx: int) -> int:
-    # Are we at the end of the digit list? If so, our cubes are nearly
-    # complete.
-    if idx == len(DIGITS):
-        if is_correct(cube_a, cube_b):
-            # Deduplicate
-            if tuple(cube_a) <= tuple(cube_b):
-                return 1
-        return 0
-
-    # We try placing the number on one cube, the other cube, both, or
-    # neither.
-    total = 0
-    digit = DIGITS[idx]
-
-    # Neither cube
-    if is_viable(cube_a, cube_b, hint=digit):
-        total += foo(cube_a, cube_b, idx + 1)
-
-    # Just on cube A
-    cube_a.append(digit)
-    if is_viable(cube_a, cube_b, hint=digit):
-        total += foo(cube_a, cube_b, idx + 1)
-
-    # On both cubes
-    cube_b.append(digit)
-    if is_viable(cube_a, cube_b, hint=digit):
-        total += foo(cube_a, cube_b, idx + 1)
-
-    # Only on cube B
-    cube_a.pop()
-    if is_viable(cube_a, cube_b, hint=digit):
-        total += foo(cube_a, cube_b, idx + 1)
-
-    # Restore cubes to original state
-    cube_b.pop()
-    return total
-
-
-def is_viable(cube_a: List[int], cube_b: List[int], hint: int) -> bool:
-    # First, are both cubes <= 6 sides?
-    if len(cube_a) > 6 or len(cube_b) > 6:
-        return False
-
-    # 6s and 9s are weird, just optimistically say yes.
-    # (Why? Because we get a 'second chance' to spell squares with 6s and 9s. Just
-    # because we can't spell it now doesn't mean we can't spell it later.)
-    if hint == 6 or hint == 9:
-        return True
-    
-    # Next, check that it's possible to spell the desired squares with these
-    # cubes. Previous calls to is_viable have checked other squares, so we
-    # only check those where the biggest digit is `hint`.
-    for d in SQUARE_MAP[hint]:
-        if not can_spell(cube_a, cube_b, d, hint):
-            return False
-
-    return True
 
 def is_correct(cube_a: List[int], cube_b: List[int]) -> bool:
-    if len(cube_a) != 6 or len(cube_b) != 6:
-        return False
-
-    for (x, y) in SQUARE_DIGITS:
+    for x, y in SQUARE_DIGITS:
         if not can_spell(cube_a, cube_b, x, y):
             return False
     return True
 
+
 def can_spell(cube_a: List[int], cube_b: List[int], d1: int, d2: int) -> bool:
     # Check that it's spellable as AB or BA or both
-    ab = has_digit_or_69(cube_a, d1) and has_digit_or_69(cube_b, d2)
-    ba = has_digit_or_69(cube_b, d1) and has_digit_or_69(cube_a, d2)
+    ab = d1 in cube_a and d2 in cube_b
+    ba = d1 in cube_b and d2 in cube_a
     return ab or ba
-
-def has_digit_or_69(cube: List[int], digit: int) -> bool:
-    if digit == 6 or digit == 9:
-        return 6 in cube or 9 in cube
-    return digit in cube
