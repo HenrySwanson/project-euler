@@ -24,7 +24,7 @@ def solve_problem() -> int:
     destinations[1] = 1
     destinations[89] = 89
 
-    for n in range(1, MAX_SUM_SQ+1):
+    for n in range(1, MAX_SUM_SQ + 1):
         chain = []
         while True:
             ans = destinations[n]
