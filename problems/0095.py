@@ -12,22 +12,38 @@ Since this chain returns to its starting point, it is called an amicable chain.
 Find the smallest member of the longest amicable chain with no element exceeding one million.
 """
 
-from lib.prime_state import PrimeCache
-from lib.primes import sum_divisors
-
+import itertools
 
 MAXIMUM = 1_000_000
 
 
 def solve_problem() -> int:
     visited = [False] * (MAXIMUM + 1)
-    pc = PrimeCache()
-    pc.init_sieve_of_eratosthenes(MAXIMUM)
     best_length = 0
     answer = 0
 
-    # TODO: can i precompute the sum of divisors as a table?
-    # no need to make a prime sieve.
+    # Precompute a table of sum-of-divisors. This turns out to be
+    # quite a bit faster than on-demand factoring every integer.
+    # Takes it from 18s to 2s.
+
+    # 1 will contribute 1 to everyone in the table, so we can
+    # just bake that in at the beginning
+    sum_divisors_table = [1] * (MAXIMUM + 1)
+    for i in itertools.count(2):
+        # on this loop, we'll mark all the n for which n = ik with k >= i
+        # for k < i, we'll have marked it on a previous loop (see below)
+        if i * i >= len(sum_divisors_table):
+            break
+
+        sum_divisors_table[i * i] += i
+        for k in itertools.count(i + 1):
+            n = i * k
+            if n >= len(sum_divisors_table):
+                break
+            # we add the divisor i, but also, while we're at it,
+            # we can add the other divisor, k. (this is why we start
+            # iterating at i+1, so that k > i)
+            sum_divisors_table[n] += i + k
 
     for n in range(1, MAXIMUM + 1):
         # If we've already seen this number, we know it either wasn't
@@ -52,7 +68,7 @@ def solve_problem() -> int:
             visited[n] = True
 
             # what's the next link in the chain?
-            n = sum_divisors(pc.factor(n)) - n
+            n = sum_divisors_table[n]
 
             # is it a loop? remember, it may not loop from the beginning!
             if n in chain:
