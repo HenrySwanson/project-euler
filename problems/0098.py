@@ -19,9 +19,11 @@ from collections import defaultdict
 import itertools
 import json
 from math import isqrt
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple, TypeVar
 
 from lib.misc import from_digits, to_digits
+
+T = TypeVar("T", str, int)
 
 
 def solve_problem() -> int:
@@ -58,7 +60,7 @@ def solve_problem() -> int:
     return best
 
 
-def make_anagram_map(seqs: Iterable[Iterable[str]]) -> Dict[Tuple[str, ...], List[str]]:
+def make_anagram_map(seqs: Iterable[Iterable[T]]) -> Dict[Tuple[T, ...], List[List[T]]]:
     map = defaultdict(list)
     for seq in seqs:
         sorted_seq = tuple(sorted(seq))
@@ -66,7 +68,7 @@ def make_anagram_map(seqs: Iterable[Iterable[str]]) -> Dict[Tuple[str, ...], Lis
     return {k: v for k, v in map.items() if len(v) > 1}
 
 
-def test(w1: List[str], w2: List[str], s1: List[str], s2: List[str]) -> bool:
+def test(w1: List[str], w2: List[str], s1: List[int], s2: List[int]) -> bool:
     mapping = {}
     assert len(w1) == len(s1)
     for ch, d in zip(w1, s1):

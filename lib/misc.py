@@ -46,6 +46,11 @@ def binomial(n: int, k: int) -> int:
     return num // den
 
 
+def pell_multiply(x1: int, y1: int, x2: int, y2: int, *, d: int) -> Tuple[int, int]:
+    """Multiplies two numbers of the form (x + y√d)"""
+    return x1 * x2 + d * y1 * y2, x1 * y2 + x2 * y1
+
+
 def to_digits(n: int) -> List[int]:
     return [int(x) for x in str(n)]
 

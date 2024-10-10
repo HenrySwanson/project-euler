@@ -11,7 +11,10 @@ By finding the first arrangement to contain over 10^12 = 1,000,000,000,000 discs
 in total, determine the number of blue discs that the box would contain.
 """
 
-LIMIT = 10**12
+from lib.misc import pell_multiply
+
+
+LIMIT: int = 10**12
 
 
 def solve_problem() -> int:
@@ -43,10 +46,8 @@ def solve_problem() -> int:
 
     x, y = 1, 1
     while True:
-        # TODO: factor out pell multiplication into some helper function
-        # (x+y√2)(1+√2) = (x + 2y) + (x + y)√2
-        x, y = x + 2 * y, x + y
-        x, y = x + 2 * y, x + y
+        # Multiply by (1 + 1√2) twice (i.e., 3+2√2)
+        x, y = pell_multiply(x, y, 3, 2, d=2)
 
         # Sanity check
         assert x * x - 2 * y * y == -1

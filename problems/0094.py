@@ -6,6 +6,9 @@ We shall define an almost equilateral triangle to be a triangle for which two si
 Find the sum of the perimeters of all almost equilateral triangles with integral side lengths and area and whose perimeters do not exceed one billion (1,000,000,000).
 """
 
+from lib.misc import pell_multiply
+
+
 ONE_BILLION = 1_000_000_000
 
 
@@ -39,8 +42,8 @@ def solve_problem() -> int:
     x, y = 2, 1
     sign = 1
     while True:
-        # (x + y√3)(2 + 1√3) = 2x + x√3 + 2y√3 + 3y
-        x, y = 2 * x + 3 * y, x + 2 * y
+        # multiply by (2 + 1√3)
+        x, y = pell_multiply(x, y, 2, 1, d=3)
         # flip the sign
         sign = -sign
 
