@@ -35,7 +35,7 @@ def iter_primitive_pythagorean_by_leg(limit: int) -> Iterator[Tuple[int, int, in
             if gcd(m, n) != 1:
                 continue
 
-            (a, b, c) = parameterize(a, b)
+            (a, b, c) = parameterize(m, n)
 
             if a < limit:
                 yield (a, b, c)
@@ -46,7 +46,7 @@ def iter_primitive_pythagorean_by_leg(limit: int) -> Iterator[Tuple[int, int, in
             if gcd(m, n) != 1:
                 continue
 
-            (a, b, c) = parameterize(a, b)
+            (a, b, c) = parameterize(m, n)
 
             if b < limit:
                 yield (b, a, c)
