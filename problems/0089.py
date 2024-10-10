@@ -19,9 +19,9 @@ Find the number of characters saved by writing each of these in their minimal fo
 Note: You can assume that all the Roman numerals in the file contain no more than four consecutive identical units.
 """
 
-from typing import Tuple
+from typing import List, Tuple
 
-SIMPLEST_STRS = "|I|II|III|IV|V|VI|VII|VIII|IX".split("|")
+SIMPLEST_STRS: List[str] = "|I|II|III|IV|V|VI|VII|VIII|IX".split("|")
 
 
 def solve_problem() -> int:
@@ -33,7 +33,7 @@ def solve_problem() -> int:
 
 def get_character_excess(roman: str) -> int:
     # chomp through the Ms, since they'll always be Ms
-    i = 0
+    i: int = 0
     while i < len(roman) and roman[i] == "M":
         i += 1
 

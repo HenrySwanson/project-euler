@@ -29,7 +29,7 @@ What is the greatest product of four adjacent numbers in the same direction (up,
 
 from typing import Tuple
 
-from lib.misc import parse_numeric_grid
+from lib.file import parse_numeric_grid
 
 
 def solve_problem() -> int:

@@ -14,7 +14,8 @@ from collections import defaultdict
 import itertools
 from typing import Tuple
 
-from lib.misc import from_digits, parse_numeric_list, to_digits
+from lib.file import parse_numeric_list
+from lib.misc import from_digits, to_digits
 
 
 def solve_problem() -> int:

@@ -105,7 +105,7 @@ Work out the first ten digits of the sum of the following one-hundred 50-digit n
 
 from typing import List
 
-from lib.misc import parse_numeric_list
+from lib.file import parse_numeric_list
 
 
 def solve_problem() -> int:

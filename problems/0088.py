@@ -20,7 +20,7 @@ What is the sum of all the minimal product-sum numbers for 2≤k≤12000?
 
 import itertools
 from math import isqrt, prod, sqrt
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Optional, Tuple, cast
 
 from lib.prime_state import PrimeCache
 
@@ -36,11 +36,11 @@ MAX_K = 12_000
 # If we have N = 2k, then r = N-2, and the factorization is 1+1+...+1+2+N/2.
 #
 # So we only need to check up to N = 2 * MAX_K
-MAX_N = MAX_K * 2
+MAX_N: int = MAX_K * 2
 
 
 def solve_problem() -> int:
-    minimals = [None] * (MAX_K + 1)
+    minimals: List[Optional[int]] = [None for _ in range(MAX_K + 1)]
     misses = 0
     total = 0
 
@@ -68,9 +68,12 @@ def solve_problem() -> int:
 
     # It's about half of them right now, but we're down to 0.5s, so don't
     # sweat it.
-    print(f"{total} total tuples, {misses} had k too large")
+    # print(f"{total} total tuples, {misses} had k too large")
 
-    return sum(set(minimals[2:]))
+    answers = minimals[2:]
+    assert all(x is not None for x in answers)
+    answers = cast(List[int], answers)
+    return sum(set(answers))
 
 
 def iter_tuples() -> Iterator[Tuple[int, ...]]:

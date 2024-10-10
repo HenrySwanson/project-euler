@@ -17,7 +17,7 @@ There is an efficient algorithm to solve it. ;o)
 """
 
 
-from lib.misc import parse_numeric_grid
+from lib.file import parse_numeric_grid
 from lib.oneshot import p0018
 
 

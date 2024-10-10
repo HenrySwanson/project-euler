@@ -8,4 +8,7 @@ Find the last ten digits of this prime number.
 
 
 def solve_problem() -> int:
-    ...
+    # This is just solving things mod 10^10
+    mod = 10**10
+    two_pow = pow(2, 7830457, mod)
+    return (28433 * two_pow + 1) % mod

@@ -16,8 +16,8 @@ Find the minimal path sum from the left column to the right column in matrix.txt
 """
 
 
+from lib.file import parse_numeric_grid
 from lib.graph import dijkstra
-from lib.misc import parse_numeric_grid
 from lib.oneshot import p0081_convert_grid_to_graph
 
 

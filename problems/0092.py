@@ -14,7 +14,7 @@ How many starting numbers below ten million will arrive at 89?
 from lib.misc import to_digits
 
 MAX = 10_000_000
-MAX_SUM_SQ = 9 * 9 * 7  # 9,999,999
+MAX_SUM_SQ: int = 9 * 9 * 7  # 9,999,999
 
 
 def solve_problem() -> int:

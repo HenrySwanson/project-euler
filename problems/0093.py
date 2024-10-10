@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import dataclasses
 import itertools
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 from lib.misc import from_digits
 
@@ -31,17 +31,18 @@ class Expr:
     rhs: Expr | str
 
     def __str__(self) -> str:
-        if isinstance(self.lhs, Expr):
-            out = f"({ self.lhs})"
-        else:
+        out: str
+        if isinstance(self.lhs, str):
             out = self.lhs
+        else:
+            out = f"({ self.lhs})"
 
         out += f" {self.op} "
 
-        if isinstance(self.rhs, Expr):
-            out += f"({ self.rhs})"
-        else:
+        if isinstance(self.rhs, str):
             out += self.rhs
+        else:
+            out += f"({ self.rhs})"
 
         return out
 
@@ -58,7 +59,7 @@ def solve_problem() -> int:
     # - a o (b o (c o d))
     # - (a o (b o c)) o d
     # - a o ((b o c) o d)
-    def make_exprs(ops: Tuple[str, str, str]):
+    def make_exprs(ops: Tuple[str, str, str]) -> List[Expr]:
         x, y, z = ops
         return [
             Expr(
@@ -91,18 +92,19 @@ def solve_problem() -> int:
         }
 
         for i in itertools.count(1):
-            if i not in answers:
-                score = i - 1
-                break
+            if i in answers:
+                continue
 
-        if score > best_score:
-            best_quartet = digits
-            best_score = score
+            score = i - 1
+            if score > best_score:
+                best_quartet = digits
+                best_score = score
+            break
 
     return from_digits(best_quartet)
 
 
-def evaluate(expr: Expr, quartet: Tuple[str, str, str, str]) -> Optional[int]:
+def evaluate(expr: Expr, quartet: Tuple[int, int, int, int]) -> Optional[int]:
     value = evaluate_helper(expr, quartet)
     if value is not None and int(value) == value:
         return int(value)
@@ -110,8 +112,8 @@ def evaluate(expr: Expr, quartet: Tuple[str, str, str, str]) -> Optional[int]:
 
 
 def evaluate_helper(
-    expr: str | Expr, quartet: Tuple[str, str, str, str]
-) -> Optional[int]:
+    expr: str | Expr, quartet: Tuple[int, int, int, int]
+) -> Optional[float]:
     if isinstance(expr, str):
         idx = ord(expr) - ord("a")
         assert 0 <= idx < 4, expr

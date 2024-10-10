@@ -15,8 +15,8 @@ and down in matrix.txt (right click and "Save Link/Target As..."), a 31K text fi
 containing an 80 by 80 matrix.
 """
 
+from lib.file import parse_numeric_grid
 from lib.graph import dijkstra
-from lib.misc import parse_numeric_grid
 from lib.oneshot import p0081_convert_grid_to_graph
 
 

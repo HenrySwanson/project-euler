@@ -12,9 +12,8 @@ Find the minimal path sum from the top left to the bottom right by only moving r
 (right click and "Save Link/Target As..."), a 31K text file containing an 80 by 80 matrix.
 """
 
-
+from lib.file import parse_numeric_grid
 from lib.graph import dijkstra
-from lib.misc import parse_numeric_grid
 from lib.oneshot import p0081_convert_grid_to_graph
 
 

@@ -30,7 +30,7 @@ NOTE: As there are only 16384 routes, it is possible to solve this problem by tr
 """
 
 
-from lib.misc import parse_numeric_grid
+from lib.file import parse_numeric_grid
 from lib.oneshot import p0018
 
 

@@ -22,7 +22,7 @@ How many distinct arrangements of the two cubes allow for all of the square numb
 """
 
 from itertools import combinations
-from typing import List
+from typing import List, Tuple
 
 
 def rotate_digit(n: int) -> int:
@@ -31,8 +31,10 @@ def rotate_digit(n: int) -> int:
     return n
 
 
-SQUARES = [x * x for x in range(1, 10)]
-SQUARE_DIGITS = [(rotate_digit(x // 10), rotate_digit(x % 10)) for x in SQUARES]
+SQUARES: List[int] = [x * x for x in range(1, 10)]
+SQUARE_DIGITS: List[Tuple[int, int]] = [
+    (rotate_digit(x // 10), rotate_digit(x % 10)) for x in SQUARES
+]
 
 
 def solve_problem() -> int:
