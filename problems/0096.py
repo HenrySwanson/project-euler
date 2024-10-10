@@ -11,7 +11,7 @@ The 6K text file, sudoku.txt (right click and 'Save Link/Target As...'), contain
 By solving all fifty puzzles find the sum of the 3-digit numbers found in the top left corner of each solution grid; for example, 483 is the 3-digit number found in the top left corner of the solution grid above.
 """
 
-from typing import Iterator, List, Tuple
+from typing import Iterator, List, Optional, Set, Tuple
 
 from lib.misc import from_digits
 
@@ -24,7 +24,6 @@ def solve_problem() -> int:
 
     for s in sudokus:
         solve(s)
-
     return sum(from_digits(s[0][0:3]) for s in sudokus)
 
 
@@ -44,39 +43,74 @@ def load_sudokus() -> List[Sudoku]:
 
 
 def solve(s: Sudoku) -> None:
-    # Okay, first approach, see how long it takes, just do search
-    # with backtracking.
-    # If that's too slow, try constraint solving.
-    success = solve_helper(s, 0, 0)
+    # Alternate constraint solving with guessing
+    empties = {(i, j) for i in range(9) for j in range(9) if s[i][j] == 0}
+
+    success = constraint_solve(s, empties)
     assert success
 
 
-def solve_helper(s: Sudoku, i: int, j: int) -> bool:
-    if i >= 9:
-        # we're at the end, it's solved!
+def constraint_solve(s: Sudoku, empties: Set[Tuple[int, int]]) -> bool:
+    # Try to solve any empty squares
+    original_empties = empties
+    empties = set(empties)
+    filled = []
+    while True:
+        modified_grid = False
+        for i, j in empties:
+            assert s[i][j] == 0
+
+            forbidden = set(s[x][y] for x, y in get_buddies(i, j))
+            allowed = set(range(1, 10)) - forbidden
+
+            if len(allowed) == 0:
+                # ran into a dead-end, clear the empties and back out
+                for m, n in original_empties:
+                    s[m][n] = 0
+                return False
+
+            if len(allowed) == 1:
+                # great, we know we can fill this in
+                s[i][j] = allowed.pop()
+                filled.append((i, j))
+                modified_grid = True
+
+        # If we didn't change anything, time to break
+        if not modified_grid:
+            break
+
+        # Otherwise, adjust empties list and try again
+        empties.difference_update(filled)
+
+    # Try the the guess step
+    if try_to_guess(s, empties):
         return True
 
-    # what's the next cell?
-    if j == 8:
-        next_i, next_j = i + 1, 0
-    else:
-        next_i, next_j = i, j + 1
+    # If it didn't work, reset the empties
+    for m, n in original_empties:
+        s[m][n] = 0
+    return False
 
-    # if this cell is decided, move to the next one
-    if s[i][j] != 0:
-        return solve_helper(s, next_i, next_j)
 
-    # otherwise see what its possible values are
+def try_to_guess(s: Sudoku, empties: Set[Tuple[int, int]]) -> bool:
+    # Did we clear everything? If so, we won!
+    if not empties:
+        return True
+
+    # Otherwise, let's guess something
+    i, j = empties.pop()
+    # see what its possible values are
     forbidden = set(s[x][y] for x, y in get_buddies(i, j))
     allowed = set(range(1, 10)) - forbidden
 
     for d in allowed:
         s[i][j] = d
-        if solve_helper(s, next_i, next_j):
+        if constraint_solve(s, empties):
             return True
 
-    # no luck, reset to 0 and try again
+    # no luck, reset that cell and back out
     s[i][j] = 0
+    empties.add((i, j))
     return False
 
 
