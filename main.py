@@ -6,7 +6,7 @@ import os
 from importlib import import_module
 from sre_constants import FAILURE, SUCCESS
 from time import perf_counter
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Literal, Optional, Set, Tuple, Union
 
 import click
 import requests
@@ -44,7 +44,7 @@ def get_problem_description(n: int) -> str:
     """
     Fetch the project description from the Project Euler website, and apply some light formatting.
     """
-    
+
     # TODO error handling (just capture from outside this fn)
     resp = requests.get(f"https://projecteuler.net/minimal={n}")
     return htmlToDocstring(resp.text)
@@ -65,7 +65,7 @@ def list_problem_files() -> List[int]:
     return problems
 
 
-def parse_interval_input(args: Tuple[str]) -> Tuple[Set[int], bool]:
+def parse_interval_input(args: Tuple[str]) -> Union[Set[int], Literal["all"]]:
     """
     Returns a set of integers that are explicitly specified by the user, and also
     a boolean indicating whether "all" was passed.
@@ -73,16 +73,15 @@ def parse_interval_input(args: Tuple[str]) -> Tuple[Set[int], bool]:
     """
 
     problems = set()
-    include_all = False
 
     for arg in args:
         if arg == "all":
-            include_all = True
-        else:
-            (start, end) = parse_interval_string(arg)
-            problems.update(range(start, end + 1))
+            return "all"  # doesn't matter what else was passed
 
-    return problems, include_all
+        (start, end) = parse_interval_string(arg)
+        problems.update(range(start, end + 1))
+
+    return problems
 
 
 # ==== CLI Commands ====
@@ -98,8 +97,8 @@ def cli() -> None:
 def create(problems: Tuple[str]) -> None:
     """Use the template file to create a starting point for the given problems."""
 
-    numbers, include_all = parse_interval_input(problems)
-    if include_all:
+    numbers = parse_interval_input(problems)
+    if numbers == "all":
         raise click.Abort('"all" not valid argument for `create` command')
 
     for n in sorted(numbers):
@@ -137,9 +136,9 @@ def create_single_file(n: int) -> None:
 def run(problems: Tuple[str]) -> None:
     """Run the solver for the given problems and print the answer."""
 
-    numbers, include_all = parse_interval_input(problems)
-    if include_all:
-        numbers.update(list_problem_files())
+    numbers = parse_interval_input(problems)
+    if numbers == "all":
+        numbers = list_problem_files()
 
     for n in sorted(numbers):
         run_single_problem(n)
@@ -185,12 +184,12 @@ def check(problems: Tuple[str]) -> None:
     """
 
     # Figure out which problems the user specified
-    numbers, include_all = parse_interval_input(problems)
+    numbers = parse_interval_input(problems)
 
     saved_answers: Dict[int, int] = parse_answer_file(ANSWER_FILE)
 
-    if include_all:
-        numbers.update(list_problem_files(), saved_answers.keys())
+    if numbers == "all":
+        numbers = set(list_problem_files()) | saved_answers.keys()
 
     statuses = defaultdict(int)
     for n in sorted(numbers):
@@ -329,32 +328,45 @@ def show(problems: Tuple[str]) -> None:
     This is nice for checking that I wrote scramble and unscramble correctly.
     """
 
-    numbers, include_all = parse_interval_input(problems)
+    numbers = parse_interval_input(problems)
     answers = parse_answer_file(ANSWER_FILE)
 
-    if include_all:
-        numbers.update(answers.keys())
+    if numbers == "all":
+        numbers = answers.keys()
 
     for n in sorted(numbers):
-        answer = answers[n]
-        click.echo(f"Problem #{n:04}: {answer}")
+        if n in answers:
+            click.echo(f"Problem #{n:04}: {answers[n]}")
+        else:
+            click.secho(f"No saved answer for problem {n}", fg="yellow")
 
 
 @answers.command()
-@click.argument("problem", type=int)
-def delete(problem: int) -> None:
+@click.argument("problems", type=str, nargs=-1, required=True)
+def delete(problems: Tuple[str]) -> None:
     """Delete a specific answer from the save file."""
 
+    numbers = parse_interval_input(problems)
     answers = parse_answer_file(ANSWER_FILE)
-    if problem in answers:
-        click.confirm(
-            f"Are you sure you want to delete the saved answer for problem {problem}?",
-            abort=True,
-        )
-        del answers[problem]
-        save_answer_file(ANSWER_FILE, answers)
-    else:
-        click.secho(f"No saved answer for problem {problem}", fg="yellow")
+
+    if numbers == "all":
+        numbers = answers.keys()
+
+    answers = parse_answer_file(ANSWER_FILE)
+
+    click.confirm(
+        f"Are you sure you want to delete the saved answer for "
+        f"problem(s) {' '.join(problems)}?",
+        abort=True,
+    )
+
+    for problem in numbers:
+        if problem in answers:
+            del answers[problem]
+        else:
+            click.secho(f"No saved answer for problem {problem}", fg="yellow")
+
+    save_answer_file(ANSWER_FILE, answers)
 
 
 if __name__ == "__main__":
